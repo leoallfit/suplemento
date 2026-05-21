@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUPLEFIT — Suplementos Deportivos</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #0a0a0a;
+    color: #f5f5f5;
+    line-height: 1.5;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* Top bar */
+  .topbar {
+    background: #0066ff;
+    color: #fff;
+    text-align: center;
+    padding: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* Header */
+  header {
+    background: #111;
+    border-bottom: 1px solid #222;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .logo {
+    font-weight: 900;
+    font-size: 24px;
+    letter-spacing: 2px;
+  }
+  .logo span { color: #0066ff; }
+  nav ul {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+  nav a {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: #0066ff; }
+  .icons {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .icon-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 20px;
+    position: relative;
+  }
+  .cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: #0066ff;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    height: 520px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #061a3a 100%);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 70% 50%, rgba(0, 102, 255, 0.3) 0%, transparent 60%);
+  }
+  .hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero h1 {
+    font-size: 72px;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: #0066ff; }
+  .hero p {
+    font-size: 18px;
+    color: #bbb;
+    max-width: 480px;
+    margin-bottom: 32px;
+  }
+  .btn {
+    display: inline-block;
+    background: #0066ff;
+    color: #fff;
+    padding: 16px 40px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 14px;
+    border: 2px solid #0066ff;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover {
+    background: transparent;
+    color: #0066ff;
+  }
+  .btn-outline {
+    background: transparent;
+    color: #fff;
+    border-color: #fff;
+  }
+  .btn-outline:hover {
+    background: #fff;
+    color: #0a0a0a;
+  }
+
+  /* Section */
+  section { padding: 80px 24px; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .section-title {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .section-title h2 {
+    font-size: 40px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .section-title h2 span { color: #0066ff; }
+  .section-title p { color: #888; }
+
+  /* Categories */
+  .categories {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .product-shortdesc {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 10px;
+    min-height: 32px;
+    line-height: 1.4;
+  }
+  .flavors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .flavor-chip {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #ccc;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .nutrition-table {
+    margin-top: 16px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .nutrition-table tr {
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .nutrition-table td {
+    padding: 8px 0;
+    font-size: 13px;
+  }
+  .nutrition-table td:first-child { color: #888; }
+  .nutrition-table td:last-child { color: #fff; font-weight: 700; text-align: right; }
+  .modal-section-label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 20px;
+    margin-bottom: 4px;
+  }
+  .category {
+    background: #161616;
+    border: 1px solid #222;
+    padding: 40px 20px;
+    text-align: center;
+    transition: all 0.25s;
+    cursor: pointer;
+  }
+  .category:hover {
+    border-color: #0066ff;
+    transform: translateY(-4px);
+  }
+  .category-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  .category h3 {
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+
+  /* Products */
+  .products {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .product {
+    background: #161616;
+    border: 1px solid #222;
+    overflow: hidden;
+    transition: all 0.25s;
+    cursor: pointer;
+  }
+  .product:hover {
+    border-color: #0066ff;
+    transform: translateY(-4px);
+  }
+  .product-image {
+    height: 260px;
+    background: linear-gradient(135deg, #222 0%, #0f0f0f 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    position: relative;
+  }
+  .product-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #0066ff;
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .product-info { padding: 20px; }
+  .product-brand {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .product-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-height: 44px;
+  }
+  .product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .product-price {
+    font-size: 22px;
+    font-weight: 900;
+    color: #0066ff;
+  }
+  .product-old-price {
+    font-size: 14px;
+    color: #666;
+    text-decoration: line-through;
+    margin-right: 8px;
+  }
+  .add-cart {
+    background: #0066ff;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: background 0.2s;
+  }
+  .add-cart:hover { background: #0052cc; }
+
+  /* Banner */
+  .banner {
+    background: linear-gradient(90deg, #0066ff 0%, #003d99 100%);
+    text-align: center;
+    padding: 60px 24px;
+  }
+  .banner h2 {
+    font-size: 36px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .banner p { margin-bottom: 24px; font-size: 16px; }
+
+  /* Features */
+  .features {
+    background: #0f0f0f;
+    border-top: 1px solid #1f1f1f;
+    border-bottom: 1px solid #1f1f1f;
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .feature {
+    text-align: center;
+  }
+  .feature-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+  .feature h4 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .feature p { color: #888; font-size: 13px; }
+
+  /* Footer */
+  footer {
+    background: #050505;
+    padding: 60px 24px 24px;
+    border-top: 1px solid #1a1a1a;
+  }
+  .footer-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 48px;
+    margin-bottom: 40px;
+  }
+  .footer-col h5 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 18px;
+    color: #0066ff;
+  }
+  .footer-col ul { list-style: none; }
+  .footer-col li { margin-bottom: 10px; }
+  .footer-col a {
+    color: #999;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+  .footer-col a:hover { color: #fff; }
+  .footer-about p { color: #888; font-size: 14px; margin-top: 8px; }
+  .footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 24px;
+    border-top: 1px solid #1a1a1a;
+    text-align: center;
+    color: #555;
+    font-size: 13px;
+  }
+
+  /* Cart drawer */
+  .drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 200;
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+  .drawer-overlay.active { display: block; }
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+    background: #0d0d0d;
+    border-left: 1px solid #1a1a1a;
+    z-index: 201;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .drawer.active { transform: translateX(0); }
+  .drawer-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .drawer-header h3 {
+    font-size: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .drawer-header h3 span { color: #0066ff; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 12px 24px; }
+  .drawer-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+  }
+  .drawer-empty .icon { font-size: 48px; margin-bottom: 12px; }
+  .cart-item {
+    display: flex;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid #161616;
+    align-items: center;
+  }
+  .cart-item-img {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #222, #0f0f0f);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-name {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .cart-item-price { color: #0066ff; font-weight: 800; font-size: 14px; }
+  .qty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .qty button {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .qty button:hover { border-color: #0066ff; }
+  .qty span { font-size: 13px; min-width: 16px; text-align: center; }
+  .cart-remove {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+  }
+  .cart-remove:hover { color: #ff4757; }
+  .drawer-footer {
+    padding: 20px 24px;
+    border-top: 1px solid #1a1a1a;
+    background: #0a0a0a;
+  }
+  .cart-total {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    font-size: 18px;
+    font-weight: 800;
+  }
+  .cart-total span:last-child { color: #0066ff; }
+  .drawer-footer .btn { width: 100%; padding: 14px; }
+
+  /* Search bar */
+  .search-bar {
+    background: #0d0d0d;
+    border-bottom: 1px solid #1a1a1a;
+    display: none;
+    padding: 16px 24px;
+    position: sticky;
+    top: 73px;
+    z-index: 49;
+  }
+  .search-bar.active { display: block; }
+  .search-bar-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    gap: 12px;
+  }
+  .search-bar input {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: 14px 18px;
+    font-size: 15px;
+    outline: none;
+    font-family: inherit;
+  }
+  .search-bar input:focus { border-color: #0066ff; }
+  .search-bar button {
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    color: #ccc;
+    padding: 0 18px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  .search-bar button:hover { border-color: #0066ff; color: #0066ff; }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+  }
+  .toast {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-left: 3px solid #0066ff;
+    padding: 14px 20px;
+    color: #fff;
+    font-size: 14px;
+    min-width: 240px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    animation: toastIn 0.25s ease;
+  }
+  .toast.success { border-left-color: #4ade80; }
+  .toast.error { border-left-color: #ff4757; }
+  @keyframes toastIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  /* Filter info bar */
+  .filter-bar {
+    display: none;
+    background: #0066ff;
+    color: #fff;
+    padding: 10px 24px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .filter-bar.active { display: block; }
+  .filter-bar button {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    padding: 3px 10px;
+    margin-left: 12px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .filter-bar button:hover { background: rgba(255,255,255,0.15); }
+
+  /* Product detail modal */
+  .product-modal-body {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  .product-modal-img {
+    width: 140px;
+    height: 140px;
+    background: linear-gradient(135deg, #222, #0f0f0f);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    flex-shrink: 0;
+  }
+  .product-modal-info { flex: 1; }
+  .product-modal-info .brand {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .product-modal-info h3 {
+    font-size: 20px;
+    margin: 6px 0 12px;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .product-modal-info .price {
+    font-size: 28px;
+    font-weight: 900;
+    color: #0066ff;
+    margin-bottom: 12px;
+  }
+  .product-modal-info .desc {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 0;
+  }
+
+  /* Account form */
+  .modal .tabs {
+    display: flex;
+    border-bottom: 1px solid #1a1a1a;
+    margin: -8px 0 20px;
+  }
+  .modal .tab {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #888;
+    padding: 12px 0;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .modal .tab.active { color: #fff; border-bottom-color: #0066ff; }
+  .modal .field {
+    margin-bottom: 12px;
+  }
+  .modal .field label {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .modal input[type="email"],
+  .modal input[type="text"] {
+    letter-spacing: 0;
+  }
+
+  /* Secret hotspot */
+  .secret-zone {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 60px;
+    cursor: default;
+    z-index: 100;
+  }
+
+  /* Modal overlay */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.active { display: flex; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal {
+    background: #0f0f0f;
+    border: 1px solid #1f1f1f;
+    border-top: 3px solid #0066ff;
+    width: 100%;
+    max-width: 420px;
+    padding: 36px;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  .modal-close:hover { color: #fff; }
+  .modal h3 {
+    font-size: 22px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .modal h3 span { color: #0066ff; }
+  .modal p { color: #888; font-size: 13px; margin-bottom: 24px; }
+  .modal input {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: 14px 16px;
+    font-size: 15px;
+    letter-spacing: 2px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal input:focus { border-color: #0066ff; }
+  .modal-error {
+    color: #ff4757;
+    font-size: 12px;
+    margin-top: 8px;
+    min-height: 16px;
+    letter-spacing: 0.5px;
+  }
+  .modal .btn { width: 100%; margin-top: 16px; }
+
+  /* Admin panel */
+  .admin-panel {
+    position: fixed;
+    inset: 0;
+    background: #050505;
+    z-index: 999;
+    display: none;
+    overflow-y: auto;
+  }
+  .admin-panel.active { display: block; }
+  .admin-header {
+    background: #0a0a0a;
+    border-bottom: 1px solid #1a1a1a;
+    padding: 18px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .admin-header h1 {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .admin-header h1 span { color: #0066ff; }
+  .admin-logout {
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    color: #ccc;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .admin-logout:hover { border-color: #0066ff; color: #0066ff; }
+  .admin-body { padding: 32px; max-width: 1200px; margin: 0 auto; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-left: 3px solid #0066ff;
+    padding: 24px;
+  }
+  .stat-card .label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .stat-card .value {
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 4px;
+  }
+  .stat-card .delta {
+    font-size: 12px;
+    color: #4ade80;
+  }
+  .stat-card .delta.negative { color: #ff4757; }
+
+  .admin-section {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    margin-bottom: 24px;
+  }
+  .admin-section-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .admin-section-header h2 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .admin-table th,
+  .admin-table td {
+    padding: 14px 24px;
+    text-align: left;
+    border-bottom: 1px solid #161616;
+    font-size: 14px;
+  }
+  .admin-table th {
+    color: #666;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .admin-table tr:last-child td { border-bottom: none; }
+  .status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 10px;
+  }
+  .status-pill.done { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+  .status-pill.pending { background: rgba(250, 204, 21, 0.15); color: #facc15; }
+  .status-pill.shipped { background: rgba(0, 102, 255, 0.15); color: #4d94ff; }
+
+  @media (max-width: 800px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .admin-body { padding: 16px; }
+    .admin-header { padding: 14px 16px; }
+    .admin-table th, .admin-table td { padding: 10px 14px; }
+  }
+
+  /* Product editor */
+  .editor-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+  .editor-toolbar h2 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .editor-toolbar .btn {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+  .editor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .editor-card {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+  }
+  .editor-img {
+    width: 92px;
+    height: 92px;
+    background: linear-gradient(135deg, #222, #0f0f0f);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    flex-shrink: 0;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px dashed #2a2a2a;
+  }
+  .editor-img:hover { border-color: #0066ff; }
+  .editor-img img { width: 100%; height: 100%; object-fit: cover; }
+  .editor-img .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-size: 10px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    text-align: center;
+    padding: 4px;
+  }
+  .editor-img:hover .overlay { opacity: 1; }
+  .editor-fields {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .editor-fields input,
+  .editor-fields select {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+  }
+  .editor-fields input:focus,
+  .editor-fields select:focus { border-color: #0066ff; }
+  .editor-row { display: flex; gap: 6px; }
+  .editor-row > * { flex: 1; }
+  .editor-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .editor-btn {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #ccc;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+  .editor-btn:hover { border-color: #0066ff; color: #0066ff; }
+  .editor-btn.danger:hover { border-color: #ff4757; color: #ff4757; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    nav { display: none; }
+    .hero h1 { font-size: 44px; }
+    .hero { height: 420px; }
+    .categories { grid-template-columns: repeat(2, 1fr); }
+    .products { grid-template-columns: repeat(2, 1fr); }
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .topbar { font-size: 11px; padding: 6px 10px; letter-spacing: 0.3px; }
+    .header-inner { padding: 14px 16px; gap: 12px; }
+    .icons { gap: 12px; }
+    .logo { font-size: 20px; letter-spacing: 1.5px; }
+    .hero { height: auto; min-height: 420px; padding: 60px 0; }
+    .hero-content { padding: 0 16px; }
+    .hero h1 { font-size: 40px; }
+    .hero p { font-size: 16px; }
+    section { padding: 50px 16px; }
+    .section-title { margin-bottom: 32px; }
+    .section-title h2 { font-size: 26px; }
+    .categories { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .category { padding: 28px 14px; }
+    .category-icon { font-size: 36px; margin-bottom: 10px; }
+    .category h3 { font-size: 13px; }
+    .products { grid-template-columns: 1fr; gap: 16px; }
+    .product-image { height: 220px; font-size: 64px; }
+    .product-info { padding: 16px; }
+    .product-name { min-height: auto; }
+    .banner { padding: 50px 16px; }
+    .banner h2 { font-size: 26px; }
+    .banner p { font-size: 14px; }
+    .btn { padding: 14px 28px; font-size: 13px; }
+    .footer-grid { grid-template-columns: 1fr; gap: 32px; margin-bottom: 28px; }
+    footer { padding: 40px 16px 20px; }
+    .filter-bar { padding: 10px 16px; font-size: 12px; }
+    .search-bar { padding: 12px 16px; }
+    .search-bar input { padding: 12px 14px; font-size: 14px; }
+
+    /* Modals fit viewport */
+    .modal-overlay { padding: 16px; }
+    .modal { padding: 24px; }
+    .modal h3 { font-size: 18px; }
+
+    /* Product detail stacks vertical */
+    .product-modal-body { flex-direction: column; align-items: stretch; gap: 16px; }
+    .product-modal-img { width: 100%; height: 180px; font-size: 80px; }
+    .product-modal-info h3 { font-size: 18px; }
+    .product-modal-info .price { font-size: 24px; }
+
+    /* Cart drawer */
+    .drawer { max-width: 100%; }
+    .drawer-header { padding: 16px 18px; }
+    .drawer-body { padding: 10px 18px; }
+    .drawer-footer { padding: 16px 18px; }
+
+    /* Admin */
+    .admin-header { padding: 12px 14px; flex-wrap: wrap; gap: 10px; }
+    .admin-header h1 { font-size: 16px; letter-spacing: 1.5px; }
+    .admin-body { padding: 14px; }
+    .editor-toolbar { flex-direction: column; align-items: stretch; }
+    .editor-toolbar > div { display: flex; gap: 8px; }
+    .editor-toolbar .btn { flex: 1; }
+    .editor-grid { grid-template-columns: 1fr; }
+    .editor-card { flex-direction: column; }
+    .editor-img { width: 100%; height: 140px; }
+
+    /* Toast position */
+    .toast-container { bottom: 16px; right: 16px; left: 16px; }
+    .toast { min-width: 0; width: 100%; }
+  }
+  @media (max-width: 380px) {
+    .hero h1 { font-size: 34px; }
+    .product-image { height: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo"><span>SUPLE</span>FIT</div>
+    <nav>
+      <ul>
+        <li><a href="#" onclick="filterCategory('proteinas');return false;">Proteínas</a></li>
+        <li><a href="#" onclick="filterCategory('creatinas');return false;">Creatinas</a></li>
+        <li><a href="#" onclick="filterCategory('preentreno');return false;">Pre-Entreno</a></li>
+        <li><a href="#" onclick="filterCategory('quemadores');return false;">Quemadores</a></li>
+        <li><a href="#" onclick="filterCategory('recuperacion');return false;">Recuperación</a></li>
+      </ul>
+    </nav>
+    <div class="icons">
+      <button class="icon-btn" aria-label="Buscar" onclick="toggleSearch()">&#9906;</button>
+      <button class="icon-btn" aria-label="Cuenta" onclick="openAccount()">&#128100;</button>
+      <button class="icon-btn" aria-label="Carrito" onclick="openCart()">
+        &#128722;<span class="cart-badge" id="cart-count">0</span>
+      </button>
+    </div>
+  </div>
+  <div class="search-bar" id="search-bar">
+    <div class="search-bar-inner">
+      <input type="text" id="search-input" placeholder="Buscar productos..." oninput="searchProducts(this.value)">
+      <button onclick="toggleSearch()" aria-label="Cerrar">&times;</button>
+    </div>
+  </div>
+  <div class="filter-bar" id="filter-bar">
+    <span id="filter-label"></span>
+    <button onclick="clearFilter()">Quitar filtro</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <h1>POTENCIA<br>TU <span>RENDIMIENTO</span></h1>
+    <p>Suplementos premium para deportistas que no se conforman. Calidad certificada, resultados reales.</p>
+    <a href="#productos" class="btn" onclick="scrollToProducts();return false;">Ver Productos</a>
+  </div>
+</section>
+
+<section id="categorias">
+  <div class="container">
+    <div class="section-title">
+      <h2>Cate<span>gorías</span></h2>
+      <p>Encuentra lo que tu cuerpo necesita</p>
+    </div>
+    <div class="categories">
+      <div class="category" onclick="filterCategory('proteinas')">
+        <div class="category-icon">&#128170;</div>
+        <h3>Proteínas</h3>
+      </div>
+      <div class="category" onclick="filterCategory('creatinas')">
+        <div class="category-icon">&#9883;</div>
+        <h3>Creatinas</h3>
+      </div>
+      <div class="category" onclick="filterCategory('preentreno')">
+        <div class="category-icon">&#9889;</div>
+        <h3>Pre-Entreno</h3>
+      </div>
+      <div class="category" onclick="filterCategory('vitaminas')">
+        <div class="category-icon">&#127818;</div>
+        <h3>Vitaminas</h3>
+      </div>
+      <div class="category" onclick="filterCategory('quemadores')">
+        <div class="category-icon">&#128293;</div>
+        <h3>Quemadores</h3>
+      </div>
+      <div class="category" onclick="filterCategory('recuperacion')">
+        <div class="category-icon">&#128167;</div>
+        <h3>Recuperación</h3>
+      </div>
+      <div class="category" onclick="filterCategory('volumen')">
+        <div class="category-icon">&#128200;</div>
+        <h3>Volumen</h3>
+      </div>
+      <div class="category" onclick="filterCategory('accesorios')">
+        <div class="category-icon">&#129380;</div>
+        <h3>Accesorios</h3>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="productos" style="background:#080808;">
+  <div class="container">
+    <div class="section-title">
+      <h2>Más <span>Vendidos</span></h2>
+      <p>Los favoritos de nuestra comunidad</p>
+    </div>
+    <div class="products" id="products-grid"></div>
+    <!--__REMOVED_PRODUCTS__
+      <div class="product" data-id="1" data-category="proteinas ofertas" data-name="Whey Protein Isolate 2kg" data-price="47.90" data-icon="&#129368;" data-desc="Proteína de suero aislada al 90%. Sin azúcares añadidos. Sabor chocolate." onclick="openProduct(this)">
+        <div class="product-image">
+          <span class="product-tag">-20%</span>
+          &#129368;
+        </div>
+        <div class="product-info">
+          <div class="product-brand">PureSupp</div>
+          <div class="product-name">Whey Protein Isolate 2kg</div>
+          <div class="product-footer">
+            <div>
+              <span class="product-old-price">59,90€</span>
+              <span class="product-price">47,90€</span>
+            </div>
+            <button class="add-cart" onclick="addProductToCart(event, this.closest('.product'))">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product" data-id="2" data-category="creatina" data-name="Creatina Monohidrato 500g" data-price="24.90" data-icon="&#128170;" data-desc="Creatina monohidrato pura. 100 servicios de 5g. Mejora fuerza y volumen." onclick="openProduct(this)">
+        <div class="product-image">
+          <span class="product-tag">Nuevo</span>
+          &#128170;
+        </div>
+        <div class="product-info">
+          <div class="product-brand">PureSupp</div>
+          <div class="product-name">Creatina Monohidrato 500g</div>
+          <div class="product-footer">
+            <span class="product-price">24,90€</span>
+            <button class="add-cart" onclick="addProductToCart(event, this.closest('.product'))">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product" data-id="3" data-category="preentreno" data-name="Pre-Workout Extreme 400g" data-price="34.90" data-icon="&#9889;" data-desc="Cafeína + beta-alanina + citrulina. Energía y bombeo para sesiones intensas." onclick="openProduct(this)">
+        <div class="product-image">
+          <span class="product-tag">Top</span>
+          &#9889;
+        </div>
+        <div class="product-info">
+          <div class="product-brand">PureSupp</div>
+          <div class="product-name">Pre-Workout Extreme 400g</div>
+          <div class="product-footer">
+            <span class="product-price">34,90€</span>
+            <button class="add-cart" onclick="addProductToCart(event, this.closest('.product'))">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product" data-id="4" data-category="vitaminas" data-name="Multivitamínico 120 caps" data-price="19.90" data-icon="&#127817;" data-desc="Complejo vitamínico completo. 4 meses de tratamiento. Vitaminas + minerales." onclick="openProduct(this)">
+        <div class="product-image">
+          &#127817;
+        </div>
+        <div class="product-info">
+          <div class="product-brand">PureSupp</div>
+          <div class="product-name">Multivitamínico 120 caps</div>
+          <div class="product-footer">
+            <span class="product-price">19,90€</span>
+            <button class="add-cart" onclick="addProductToCart(event, this.closest('.product'))">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product" data-id="5" data-category="proteinas ofertas" data-name="Caseína Nocturna 1kg" data-price="33.90" data-icon="&#129368;" data-desc="Liberación lenta. Ideal para tomar antes de dormir y recuperar muscular." onclick="openProduct(this)">
+        <div class="product-image">
+          <span class="product-tag">-15%</span>
+          &#129368;
+        </div>
+        <div class="product-info">
+          <div class="product-brand">PureSupp</div>
+          <div class="product-name">Caseína Nocturna 1kg</div>
+          <div class="product-footer">
+            <div>
+              <span class="product-old-price">39,90€</span>
+              <span class="product-price">33,90€</span>
+            </div>
+            <button class="add-cart" onclick="addProductToCart(event, this.closest('.product'))">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product" data-id="6" data-category="preentreno" data-name="L-Carnitina Líquida 1000ml" data-price="22.90" data-icon="&#128293;" data-desc="Quemador de grasa líquido. 3000mg por dosis. Sabor frutos rojos." onclick="openProduct(this)">
+        <div class="product-image">&#128293;</div>
+        <div class="product-info">
+          <div class="product-brand">PureSupp</div>
+          <div class="product-name">L-Carnitina Líquida 1000ml</div>
+          <div class="product-footer">
+            <span class="product-price">22,90€</span>
+            <button class="add-cart" onclick="addProductToCart(event, this.closest('.product'))">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product" data-id="7" data-category="proteinas" data-name="BCAA 8:1:1 Aminoácidos" data-price="29.90" data-icon="&#129529;" data-desc="Aminoácidos ramificados ratio 8:1:1. Recuperación y resistencia muscular." onclick="openProduct(this)">
+        <div class="product-image">&#129529;</div>
+        <div class="product-info">
+          <div class="product-brand">PureSupp</div>
+          <div class="product-name">BCAA 8:1:1 Aminoácidos</div>
+          <div class="product-footer">
+            <span class="product-price">29,90€</span>
+            <button class="add-cart" onclick="addProductToCart(event, this.closest('.product'))">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product" data-id="8" data-category="proteinas" data-name="Barritas Proteicas Pack 12" data-price="26.90" data-icon="&#127853;" data-desc="12 barritas de 60g. 20g proteína por barrita. Snack ideal post-entreno." onclick="openProduct(this)">
+        <div class="product-image">
+          <span class="product-tag">Bestseller</span>
+          &#127853;
+        </div>
+        <div class="product-info">
+          <div class="product-brand">PureSupp</div>
+          <div class="product-name">Barritas Proteicas Pack 12</div>
+          <div class="product-footer">
+            <span class="product-price">26,90€</span>
+            <button class="add-cart" onclick="addProductToCart(event, this.closest('.product'))">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+    __END_REMOVED__-->
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col footer-about">
+      <div class="logo" style="margin-bottom:12px;"><span>SUPLE</span>FIT</div>
+      <p>Suplementación deportiva premium. Calidad real, precios justos, resultados que se notan.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Tienda</h5>
+      <ul>
+        <li><a href="#" onclick="filterCategory('proteinas');return false;">Proteínas</a></li>
+        <li><a href="#" onclick="filterCategory('creatinas');return false;">Creatinas</a></li>
+        <li><a href="#" onclick="filterCategory('preentreno');return false;">Pre-Entreno</a></li>
+        <li><a href="#" onclick="filterCategory('quemadores');return false;">Quemadores</a></li>
+        <li><a href="#" onclick="filterCategory('recuperacion');return false;">Recuperación</a></li>
+        <li><a href="#" onclick="filterCategory('volumen');return false;">Volumen</a></li>
+        <li><a href="#" onclick="filterCategory('accesorios');return false;">Accesorios</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2026 SupleFit · Todos los derechos reservados
+  </div>
+</footer>
+
+<!-- Cart drawer -->
+<div class="drawer-overlay" id="cart-overlay" onclick="closeCart()"></div>
+<aside class="drawer" id="cart-drawer">
+  <div class="drawer-header">
+    <h3>Tu <span>Carrito</span></h3>
+    <button class="modal-close" onclick="closeCart()" style="position:static;" aria-label="Cerrar">&times;</button>
+  </div>
+  <div class="drawer-body" id="cart-body">
+    <div class="drawer-empty" id="cart-empty">
+      <div class="icon">&#128722;</div>
+      <p>Tu carrito está vacío</p>
+    </div>
+  </div>
+  <div class="drawer-footer" id="cart-footer" style="display:none;">
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cart-total-amount">0,00€</span>
+    </div>
+    <button class="btn" onclick="checkout()">Finalizar compra</button>
+  </div>
+</aside>
+
+<!-- Account modal -->
+<div class="modal-overlay" id="account-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAccount()" aria-label="Cerrar">&times;</button>
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchTab('login')">Entrar</button>
+      <button class="tab" id="tab-register" onclick="switchTab('register')">Registro</button>
+    </div>
+    <div id="form-login">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="tu@email.com">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="login-pwd" placeholder="••••••••">
+      </div>
+      <button class="btn" onclick="doLogin()">Iniciar sesión</button>
+    </div>
+    <div id="form-register" style="display:none;">
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" id="reg-name" placeholder="Tu nombre">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="tu@email.com">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="reg-pwd" placeholder="••••••••">
+      </div>
+      <button class="btn" onclick="doRegister()">Crear cuenta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Product detail modal -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal" style="max-width:560px; max-height: 90vh; overflow-y: auto;">
+    <button class="modal-close" onclick="closeProduct()" aria-label="Cerrar">&times;</button>
+    <div class="product-modal-body">
+      <div class="product-modal-img" id="pm-img"></div>
+      <div class="product-modal-info">
+        <div class="brand" id="pm-brand">Fit</div>
+        <h3 id="pm-name"></h3>
+        <div class="price" id="pm-price"></div>
+        <p class="desc" id="pm-desc"></p>
+      </div>
+    </div>
+    <div id="pm-flavors-wrap" style="display:none;">
+      <div class="modal-section-label">Sabores</div>
+      <div class="flavors" id="pm-flavors"></div>
+    </div>
+    <div id="pm-nutrition-wrap" style="display:none;">
+      <div class="modal-section-label">Información nutricional</div>
+      <table class="nutrition-table"><tbody id="pm-nutrition"></tbody></table>
+    </div>
+    <button class="btn" style="margin-top:24px;width:100%;" onclick="addCurrentProductToCart()">+ Añadir al carrito</button>
+  </div>
+</div>
+
+<!-- Newsletter modal -->
+<div class="modal-overlay" id="newsletter-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeNewsletter()" aria-label="Cerrar">&times;</button>
+    <h3>-30% <span>Cupón</span></h3>
+    <p>Déjanos tu email y recibe el código al instante.</p>
+    <div class="field">
+      <input type="email" id="newsletter-email" placeholder="tu@email.com">
+    </div>
+    <button class="btn" onclick="subscribeNewsletter()">Recibir cupón</button>
+  </div>
+</div>
+
+<!-- Info modal -->
+<div class="modal-overlay" id="info-modal">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="closeInfo()" aria-label="Cerrar">&times;</button>
+    <h3 id="info-title"></h3>
+    <p id="info-body" style="color:#bbb;line-height:1.7;"></p>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<div class="secret-zone" id="secret-zone" aria-hidden="true"></div>
+
+<div class="modal-overlay" id="login-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeLogin()" aria-label="Cerrar">&times;</button>
+    <h3>Acceso <span>Admin</span></h3>
+    <p>Zona restringida. Introduce la clave para continuar.</p>
+    <input type="password" id="pwd-input" placeholder="••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')tryLogin()">
+    <div class="modal-error" id="pwd-error"></div>
+    <button class="btn" onclick="tryLogin()">Entrar</button>
+  </div>
+</div>
+
+<div class="admin-panel" id="admin-panel">
+  <div class="admin-header">
+    <h1><span>SUPLE</span>FIT · ADMIN</h1>
+    <button class="admin-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+  <div class="admin-body">
+
+    <div class="admin-section" style="padding:24px;">
+      <div class="editor-toolbar">
+        <h2>Editor de Productos</h2>
+        <div style="display:flex;gap:10px;">
+          <button class="btn" style="background:transparent;border:2px solid #2a2a2a;color:#ccc;" onclick="resetProducts()">Restaurar</button>
+          <button class="btn" onclick="addNewProduct()">+ Nuevo</button>
+        </div>
+      </div>
+      <div class="editor-grid" id="editor-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ---------- Catálogo ----------
+  const ICONS = {
+    proteinas: '&#128170;',
+    creatinas: '&#9883;',
+    preentreno: '&#9889;',
+    vitaminas: '&#127818;',
+    quemadores: '&#128293;',
+    recuperacion: '&#128167;',
+    volumen: '&#128200;',
+    accesorios: '&#129380;'
+  };
+  let PRODUCTS = [
+    { id: 1, name: 'Proteína Hoch', brand: 'Hoch', price: 45800, shortdesc: 'Whey de alta calidad · 25g proteína', flavors: ['Chocolate','Vainilla','Frutilla','Dulce de leche'], nutrition: [['Proteínas','25g'],['Carbohidratos','3g'],['Grasas','1.5g'],['Calorías','125kcal'],['Porciones','30']], desc: 'Ideal para recuperación muscular post-entreno y aumento de masa magra.', category: 'proteinas' },
+    { id: 2, name: 'Multivitamínico Star', brand: 'Star Nutrition', price: 21000, shortdesc: 'Vitaminas y minerales esenciales', flavors: [], nutrition: [['Vitamina C','1000mg'],['Vitamina D','1000UI'],['Zinc','10mg'],['Hierro','18mg']], desc: 'Cubre los requerimientos diarios de micronutrientes para rendimiento óptimo.', category: 'vitaminas' },
+    { id: 3, name: 'Proteína Núcleo', brand: 'Núcleo', price: 32100, shortdesc: 'Whey con excelente perfil aminoacídico', flavors: ['Chocolate','Vainilla','Cookies'], nutrition: [['Proteínas','24g'],['Carbohidratos','4g'],['Grasas','2g'],['Calorías','130kcal'],['Porciones','28']], desc: 'Alta biodisponibilidad. Ideal para síntesis muscular y recuperación.', category: 'proteinas' },
+    { id: 4, name: 'Pre-Entreno V8', brand: 'Star Nutrition', price: 30300, shortdesc: 'Energía foco y bomba muscular', flavors: ['Sandía','Limón','Tropical','Frutos rojos'], nutrition: [['Cafeína','200mg'],['Beta-Alanina','3.2g'],['Creatina','2g'],['Citrulina','4g']], desc: 'Fórmula de alto rendimiento para entrenamientos intensos. Activa a los 20 min.', category: 'preentreno' },
+    { id: 5, name: 'Creatina Star', brand: 'Star Nutrition', price: 23600, shortdesc: 'Creatina monohidrato pura · 60 porciones', flavors: ['Sin sabor','Limón'], nutrition: [['Creatina monohidrato','5g'],['Porciones','60']], desc: 'Aumenta fuerza potencia y recuperación. La más estudiada del mercado.', category: 'creatinas' },
+    { id: 6, name: 'Thermogenix', brand: 'Star Nutrition', price: 26700, shortdesc: 'Quemador para pérdida de grasa', flavors: ['Tropical','Limón'], nutrition: [['Cafeína','200mg'],['L-Carnitina','500mg'],['Té verde','300mg']], desc: 'Acelera el metabolismo y potencia la oxidación de grasas como fuente de energía.', category: 'quemadores' },
+    { id: 7, name: 'Proteína Star', brand: 'Star Nutrition', price: 45990, shortdesc: 'Whey concentrada con excelente sabor', flavors: ['Chocolate','Vainilla','Frutilla','Banana'], nutrition: [['Proteínas','24g'],['Carbohidratos','5g'],['Grasas','2g'],['Calorías','135kcal'],['Porciones','30']], desc: 'Proteína de alta calidad. Ideal para ganancia muscular y recuperación.', category: 'proteinas' },
+    { id: 8, name: 'Creatina Hoch', brand: 'Hoch', price: 27500, shortdesc: 'Creatina micronizada de máxima pureza', flavors: ['Sin sabor'], nutrition: [['Creatina micronizada','5g'],['Porciones','60']], desc: 'Micronizada para mayor absorción. Aumenta rendimiento en ejercicio de alta intensidad.', category: 'creatinas' },
+    { id: 9, name: 'Pre-Entreno V8', brand: 'Núcleo', price: 28300, shortdesc: 'Energía y bomba muscular Núcleo', flavors: ['Sandía','Mango','Tropical'], nutrition: [['Cafeína','180mg'],['Beta-Alanina','3g'],['Citrulina','4g']], desc: 'Pre-entreno completo para máximo rendimiento y concentración.', category: 'preentreno' },
+    { id: 10, name: 'Creatina Núcleo Fit', brand: 'Núcleo', price: 20500, shortdesc: 'Creatina práctica para el día a día', flavors: ['Sin sabor','Limón'], nutrition: [['Creatina','3g'],['Porciones','40']], desc: 'Opción accesible y efectiva para mejorar fuerza y resistencia muscular.', category: 'creatinas' },
+    { id: 11, name: 'Colágeno Star', brand: 'Star Nutrition', price: 20900, shortdesc: 'Colágeno hidrolizado · articulaciones y piel', flavors: ['Naranja','Frutos rojos','Sin sabor'], nutrition: [['Colágeno hidrolizado','10g'],['Vitamina C','60mg'],['Porciones','30']], desc: 'Refuerza tejidos conectivos cartílagos y mejora la salud de la piel.', category: 'recuperacion' },
+    { id: 12, name: 'Ganador de Peso', brand: 'Star Nutrition', price: 28100, shortdesc: 'Hipercalórico para ganar masa y peso', flavors: ['Chocolate','Vainilla','Frutilla'], nutrition: [['Proteínas','30g'],['Carbohidratos','55g'],['Grasas','3g'],['Calorías','370kcal'],['Porciones','15']], desc: 'Ideal para personas con dificultad para subir de peso o en etapa de volumen.', category: 'volumen' },
+    { id: 13, name: 'Shaker Everlast', brand: 'Everlast', price: 12900, shortdesc: '700ml · compartimiento · libre de BPA', flavors: [], nutrition: [['Capacidad','700ml'],['Material','Libre de BPA'],['Compartimiento','Incluye']], desc: 'Shaker resistente con compartimiento para guardar suplementos o snacks.', category: 'accesorios' },
+    { id: 14, name: 'Colágeno Núcleo Fit', brand: 'Núcleo', price: 22650, shortdesc: 'Colágeno para articulaciones y piel', flavors: ['Naranja','Limón','Sin sabor'], nutrition: [['Colágeno','10g'],['Vitamina C','50mg'],['Porciones','30']], desc: 'Fórmula para recuperación articular y cuidado de piel y tejidos.', category: 'recuperacion' },
+    { id: 15, name: 'Citrato Magnesio Caps', brand: 'Star Nutrition', price: 17250, shortdesc: 'Magnesio en cápsulas · 60 porciones', flavors: [], nutrition: [['Magnesio','300mg'],['Porciones','60']], desc: 'Mejora calidad del sueño reduce calambres y apoya la función muscular.', category: 'recuperacion' },
+    { id: 16, name: 'Citrato Magnesio Polvo', brand: 'Star Nutrition', price: 26990, shortdesc: 'Magnesio en polvo de alta absorción', flavors: ['Sin sabor','Limón'], nutrition: [['Magnesio','350mg'],['Porciones','30']], desc: 'Máxima absorción. Ideal para recuperación nocturna y calidad del sueño.', category: 'recuperacion' },
+    { id: 17, name: 'Omega 3', brand: 'Star Nutrition', price: 28900, shortdesc: 'EPA + DHA · corazón y cerebro', flavors: [], nutrition: [['EPA','360mg'],['DHA','240mg'],['Porciones','60']], desc: 'Reduce inflamación mejora salud cardiovascular y función cognitiva.', category: 'recuperacion' }
+  ];
+
+  function formatPrice(n) {
+    return '$' + n.toLocaleString('es-AR');
+  }
+  function iconFor(p) { return ICONS[p.category] || '&#128170;'; }
+  function imgFor(p) {
+    if (p.image) return `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`;
+    return `<span style="font-size:inherit;">${iconFor(p)}</span>`;
+  }
+
+  // ---------- Persistencia ----------
+  const STORAGE_KEY = 'puresupp_products_v1';
+  function saveProducts() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(PRODUCTS)); } catch(e) {}
+  }
+  function loadProducts() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) PRODUCTS = parsed;
+      }
+    } catch(e) {}
+  }
+  loadProducts();
+
+  function renderProducts() {
+    const grid = document.getElementById('products-grid');
+    grid.innerHTML = PRODUCTS.map(p => `
+      <div class="product" data-id="${p.id}" data-category="${p.category}" data-name="${p.name}" onclick="openProduct(${p.id})">
+        <div class="product-image" style="${p.image ? 'padding:0;overflow:hidden;' : ''}">${imgFor(p)}</div>
+        <div class="product-info">
+          <div class="product-brand">${p.brand}</div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-shortdesc">${p.shortdesc}</div>
+          <div class="product-footer">
+            <span class="product-price">${formatPrice(p.price)}</span>
+            <button class="add-cart" onclick="event.stopPropagation();addProductToCart(${p.id})">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ---------- Toast ----------
+  function toast(msg, type) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'toast' + (type ? ' ' + type : '');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => {
+      t.style.transition = 'opacity 0.3s, transform 0.3s';
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(120%)';
+      setTimeout(() => t.remove(), 300);
+    }, 2400);
+  }
+
+  // ---------- Cart ----------
+  const cart = [];
+
+  function addProductToCart(id) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    const existing = cart.find(i => i.id === id);
+    if (existing) existing.qty++;
+    else cart.push({ id: p.id, name: p.name, price: p.price, icon: imgFor(p), qty: 1 });
+    refreshCart();
+    toast('Añadido: ' + p.name, 'success');
+  }
+
+  function refreshCart() {
+    const count = cart.reduce((s, i) => s + i.qty, 0);
+    document.getElementById('cart-count').textContent = count;
+    const body = document.getElementById('cart-body');
+    const footer = document.getElementById('cart-footer');
+    if (cart.length === 0) {
+      body.innerHTML = '<div class="drawer-empty"><div class="icon">&#128722;</div><p>Tu carrito está vacío</p></div>';
+      footer.style.display = 'none';
+      return;
+    }
+    footer.style.display = 'block';
+    body.innerHTML = cart.map(i => `
+      <div class="cart-item">
+        <div class="cart-item-img">${i.icon}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${i.name}</div>
+          <div class="cart-item-price">${formatPrice(i.price * i.qty)}</div>
+          <div class="qty">
+            <button onclick="changeQty(${i.id}, -1)">-</button>
+            <span>${i.qty}</span>
+            <button onclick="changeQty(${i.id}, 1)">+</button>
+          </div>
+        </div>
+        <button class="cart-remove" onclick="removeFromCart(${i.id})" aria-label="Eliminar">&times;</button>
+      </div>
+    `).join('');
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    document.getElementById('cart-total-amount').textContent = formatPrice(total);
+  }
+
+  function changeQty(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if (!item) return;
+    item.qty += delta;
+    if (item.qty <= 0) {
+      const idx = cart.findIndex(i => i.id === id);
+      cart.splice(idx, 1);
+    }
+    refreshCart();
+  }
+  function removeFromCart(id) {
+    const idx = cart.findIndex(i => i.id === id);
+    if (idx >= 0) cart.splice(idx, 1);
+    refreshCart();
+    toast('Producto eliminado');
+  }
+
+  function openCart() {
+    document.getElementById('cart-overlay').classList.add('active');
+    document.getElementById('cart-drawer').classList.add('active');
+  }
+  function closeCart() {
+    document.getElementById('cart-overlay').classList.remove('active');
+    document.getElementById('cart-drawer').classList.remove('active');
+  }
+  function checkout() {
+    if (cart.length === 0) return;
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    toast('Pedido realizado: ' + formatPrice(total), 'success');
+    cart.length = 0;
+    refreshCart();
+    closeCart();
+  }
+
+  // ---------- Search ----------
+  function toggleSearch() {
+    const bar = document.getElementById('search-bar');
+    bar.classList.toggle('active');
+    if (bar.classList.contains('active')) {
+      setTimeout(() => document.getElementById('search-input').focus(), 50);
+    } else {
+      document.getElementById('search-input').value = '';
+      searchProducts('');
+    }
+  }
+  function searchProducts(q) {
+    const query = q.trim().toLowerCase();
+    document.querySelectorAll('.product').forEach(p => {
+      const name = p.dataset.name.toLowerCase();
+      p.style.display = (!query || name.includes(query)) ? '' : 'none';
+    });
+  }
+
+  // ---------- Category filter ----------
+  function filterCategory(cat) {
+    const labels = {
+      proteinas: 'Proteínas',
+      creatinas: 'Creatinas',
+      preentreno: 'Pre-Entreno',
+      vitaminas: 'Vitaminas',
+      quemadores: 'Quemadores',
+      recuperacion: 'Recuperación',
+      volumen: 'Volumen',
+      accesorios: 'Accesorios'
+    };
+    document.querySelectorAll('.product').forEach(p => {
+      const cats = (p.dataset.category || '').split(' ');
+      p.style.display = cats.includes(cat) ? '' : 'none';
+    });
+    const bar = document.getElementById('filter-bar');
+    document.getElementById('filter-label').textContent = 'Filtrando por: ' + (labels[cat] || cat);
+    bar.classList.add('active');
+    scrollToProducts();
+  }
+  function clearFilter() {
+    document.querySelectorAll('.product').forEach(p => p.style.display = '');
+    document.getElementById('filter-bar').classList.remove('active');
+  }
+  function scrollToProducts() {
+    document.getElementById('productos').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ---------- Product detail ----------
+  let currentProductId = null;
+  function openProduct(id) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    currentProductId = id;
+    const pmImg = document.getElementById('pm-img');
+    pmImg.innerHTML = imgFor(p);
+    pmImg.style.padding = p.image ? '0' : '';
+    pmImg.style.overflow = p.image ? 'hidden' : '';
+    document.getElementById('pm-brand').textContent = p.brand;
+    document.getElementById('pm-name').textContent = p.name;
+    document.getElementById('pm-price').textContent = formatPrice(p.price);
+    document.getElementById('pm-desc').textContent = p.desc || '';
+
+    const flavorsWrap = document.getElementById('pm-flavors-wrap');
+    const flavorsEl = document.getElementById('pm-flavors');
+    if (p.flavors && p.flavors.length) {
+      flavorsEl.innerHTML = p.flavors.map(f => `<span class="flavor-chip">${f}</span>`).join('');
+      flavorsWrap.style.display = 'block';
+    } else {
+      flavorsWrap.style.display = 'none';
+    }
+
+    const nutWrap = document.getElementById('pm-nutrition-wrap');
+    const nutEl = document.getElementById('pm-nutrition');
+    if (p.nutrition && p.nutrition.length) {
+      nutEl.innerHTML = p.nutrition.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`).join('');
+      nutWrap.style.display = 'block';
+    } else {
+      nutWrap.style.display = 'none';
+    }
+
+    document.getElementById('product-modal').classList.add('active');
+  }
+  function closeProduct() {
+    document.getElementById('product-modal').classList.remove('active');
+  }
+  function addCurrentProductToCart() {
+    if (currentProductId) {
+      addProductToCart(currentProductId);
+      closeProduct();
+    }
+  }
+
+  // ---------- Account ----------
+  function openAccount() {
+    document.getElementById('account-modal').classList.add('active');
+  }
+  function closeAccount() {
+    document.getElementById('account-modal').classList.remove('active');
+  }
+  function switchTab(which) {
+    document.getElementById('tab-login').classList.toggle('active', which === 'login');
+    document.getElementById('tab-register').classList.toggle('active', which === 'register');
+    document.getElementById('form-login').style.display = which === 'login' ? 'block' : 'none';
+    document.getElementById('form-register').style.display = which === 'register' ? 'block' : 'none';
+  }
+  function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email.includes('@')) { toast('Email inválido', 'error'); return; }
+    closeAccount();
+    toast('Bienvenido de nuevo', 'success');
+  }
+  function doRegister() {
+    const email = document.getElementById('reg-email').value.trim();
+    const name = document.getElementById('reg-name').value.trim();
+    if (!name || !email.includes('@')) { toast('Completa los campos', 'error'); return; }
+    closeAccount();
+    toast('Cuenta creada, ' + name, 'success');
+  }
+
+  // ---------- Newsletter ----------
+  function openNewsletter() {
+    document.getElementById('newsletter-modal').classList.add('active');
+    setTimeout(() => document.getElementById('newsletter-email').focus(), 50);
+  }
+  function closeNewsletter() {
+    document.getElementById('newsletter-modal').classList.remove('active');
+  }
+  function subscribeNewsletter() {
+    const email = document.getElementById('newsletter-email').value.trim();
+    if (!email.includes('@')) { toast('Email inválido', 'error'); return; }
+    document.getElementById('newsletter-email').value = '';
+    closeNewsletter();
+    toast('Cupón enviado a ' + email, 'success');
+  }
+
+  // ---------- Info modal ----------
+  const INFO = {
+    envios: { t: 'Envíos y devoluciones', b: 'Envío gratuito a partir de $50.000. Entrega en 24-48h. 30 días para devoluciones sin coste. Reembolso en 7 días tras recibir el producto.' },
+    faq: { t: 'Preguntas frecuentes', b: '¿Cuándo recibiré mi pedido? En 24-48h. ¿Productos certificados? Sí, todos pasan controles de calidad. ¿Métodos de pago? Tarjeta, PayPal, Bizum, transferencia.' },
+    contacto: { t: 'Contacto', b: 'Email: hola@suplefit.com · Teléfono: +34 900 000 000 · Horario: L-V 9:00-19:00. Tiempo medio de respuesta: 2 horas.' },
+    pedido: { t: 'Seguir mi pedido', b: 'Recibirás un email con el número de seguimiento al enviar tu pedido. También puedes consultarlo desde "Mi cuenta" > "Pedidos".' },
+    terminos: { t: 'Términos y condiciones', b: 'Al usar este sitio aceptas nuestras condiciones de uso y venta. Los precios incluyen IVA. Stocks limitados. Imágenes orientativas.' },
+    privacidad: { t: 'Privacidad', b: 'Tratamos tus datos conforme al RGPD. Solo los usamos para gestionar pedidos y mejorar tu experiencia. No los compartimos con terceros sin tu consentimiento.' },
+    cookies: { t: 'Política de cookies', b: 'Usamos cookies técnicas y de análisis. Puedes desactivar las opcionales en cualquier momento desde la configuración de tu navegador.' },
+    legal: { t: 'Aviso legal', b: 'SupleFit S.L. · CIF B12345678 · Dirección fiscal: Calle Ejemplo 1, 28001 Madrid. Inscrita en el Registro Mercantil de Madrid.' }
+  };
+  function openInfo(key) {
+    const data = INFO[key];
+    if (!data) return;
+    document.getElementById('info-title').textContent = data.t;
+    document.getElementById('info-body').textContent = data.b;
+    document.getElementById('info-modal').classList.add('active');
+  }
+  function closeInfo() {
+    document.getElementById('info-modal').classList.remove('active');
+  }
+
+  // Close any modal on overlay click
+  ['account-modal','product-modal','newsletter-modal','info-modal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', (e) => {
+      if (e.target.id === id) document.getElementById(id).classList.remove('active');
+    });
+  });
+
+  // Close modals/drawer with Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+      closeCart();
+    }
+  });
+
+  // Secret admin access: 3 clicks on bottom-left within 2s
+  const ADMIN_PASSWORD = 'admin2026';
+  let clickCount = 0;
+  let clickTimer = null;
+
+  document.getElementById('secret-zone').addEventListener('click', () => {
+    clickCount++;
+    if (clickTimer) clearTimeout(clickTimer);
+    clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+    if (clickCount >= 3) {
+      clickCount = 0;
+      openLogin();
+    }
+  });
+
+  function openLogin() {
+    document.getElementById('login-modal').classList.add('active');
+    document.getElementById('pwd-error').textContent = '';
+    const input = document.getElementById('pwd-input');
+    input.value = '';
+    setTimeout(() => input.focus(), 50);
+  }
+  function closeLogin() {
+    document.getElementById('login-modal').classList.remove('active');
+  }
+  function tryLogin() {
+    const val = document.getElementById('pwd-input').value;
+    if (val === ADMIN_PASSWORD) {
+      closeLogin();
+      document.getElementById('admin-panel').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      renderProductEditor();
+    } else {
+      document.getElementById('pwd-error').textContent = 'Clave incorrecta';
+      document.getElementById('pwd-input').value = '';
+    }
+  }
+  function logout() {
+    document.getElementById('admin-panel').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('login-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'login-modal') closeLogin();
+  });
+
+  // ---------- Editor de Productos ----------
+  const CATEGORIES = ['proteinas','creatinas','preentreno','vitaminas','quemadores','recuperacion','volumen','accesorios'];
+  const CAT_LABELS = {
+    proteinas: 'Proteínas', creatinas: 'Creatinas', preentreno: 'Pre-Entreno',
+    vitaminas: 'Vitaminas', quemadores: 'Quemadores', recuperacion: 'Recuperación',
+    volumen: 'Volumen', accesorios: 'Accesorios'
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderProductEditor() {
+    const grid = document.getElementById('editor-grid');
+    if (!grid) return;
+    grid.innerHTML = PRODUCTS.map(p => `
+      <div class="editor-card">
+        <div class="editor-img" onclick="document.getElementById('file-${p.id}').click()">
+          ${imgFor(p)}
+          <div class="overlay">Cambiar<br>foto</div>
+          <input type="file" id="file-${p.id}" accept="image/*" style="display:none" onchange="handleImageUpload(${p.id}, this)">
+        </div>
+        <div class="editor-fields">
+          <input type="text" value="${esc(p.name)}" placeholder="Nombre" onchange="updateProduct(${p.id}, 'name', this.value)">
+          <div class="editor-row">
+            <input type="text" value="${esc(p.brand)}" placeholder="Marca" onchange="updateProduct(${p.id}, 'brand', this.value)">
+            <input type="number" value="${p.price}" placeholder="Precio" onchange="updateProduct(${p.id}, 'price', parseFloat(this.value)||0)">
+          </div>
+          <input type="text" value="${esc(p.shortdesc)}" placeholder="Descripción corta" onchange="updateProduct(${p.id}, 'shortdesc', this.value)">
+          <select onchange="updateProduct(${p.id}, 'category', this.value)">
+            ${CATEGORIES.map(c => `<option value="${c}" ${c === p.category ? 'selected' : ''}>${CAT_LABELS[c]}</option>`).join('')}
+          </select>
+          <div class="editor-actions">
+            ${p.image ? `<button class="editor-btn" onclick="removeImage(${p.id})">Quitar foto</button>` : ''}
+            <button class="editor-btn danger" onclick="deleteProduct(${p.id})">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function updateProduct(id, field, value) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    p[field] = value;
+    saveProducts();
+    renderProducts();
+    toast('Cambios guardados', 'success');
+  }
+
+  function handleImageUpload(id, input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast('Imagen muy grande (máx 2MB)', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const p = PRODUCTS.find(x => x.id === id);
+      if (!p) return;
+      p.image = e.target.result;
+      saveProducts();
+      renderProducts();
+      renderProductEditor();
+      toast('Foto actualizada', 'success');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage(id) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    delete p.image;
+    saveProducts();
+    renderProducts();
+    renderProductEditor();
+    toast('Foto eliminada');
+  }
+
+  function deleteProduct(id) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    if (!confirm('¿Eliminar "' + p.name + '"?')) return;
+    const idx = PRODUCTS.findIndex(x => x.id === id);
+    PRODUCTS.splice(idx, 1);
+    saveProducts();
+    renderProducts();
+    renderProductEditor();
+    toast('Producto eliminado');
+  }
+
+  function addNewProduct() {
+    const maxId = PRODUCTS.reduce((m, p) => Math.max(m, p.id), 0);
+    PRODUCTS.unshift({
+      id: maxId + 1,
+      name: 'Nuevo producto',
+      brand: 'SupleFit',
+      price: 0,
+      shortdesc: '',
+      flavors: [],
+      nutrition: [],
+      desc: '',
+      category: 'proteinas'
+    });
+    saveProducts();
+    renderProducts();
+    renderProductEditor();
+    toast('Producto añadido', 'success');
+  }
+
+  function resetProducts() {
+    if (!confirm('¿Restaurar el catálogo original? Se perderán todos los cambios.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+
+  // Render product grid on load
+  renderProducts();
+</script>
+
+</body>
+</html>
