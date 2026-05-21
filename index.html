@@ -150,6 +150,15 @@
     background: #fff;
     color: #0a0a0a;
   }
+  .btn-wa {
+    background: #25D366;
+    border-color: #25D366;
+    color: #fff;
+  }
+  .btn-wa:hover {
+    background: transparent;
+    color: #25D366;
+  }
 
   /* Section */
   section { padding: 80px 24px; }
@@ -1103,7 +1112,6 @@
     </nav>
     <div class="icons">
       <button class="icon-btn" aria-label="Buscar" onclick="toggleSearch()">&#9906;</button>
-      <button class="icon-btn" aria-label="Cuenta" onclick="openAccount()">&#128100;</button>
       <button class="icon-btn" aria-label="Carrito" onclick="openCart()">
         &#128722;<span class="cart-badge" id="cart-count">0</span>
       </button>
@@ -1344,46 +1352,9 @@
       <span>Total</span>
       <span id="cart-total-amount">0,00€</span>
     </div>
-    <button class="btn" onclick="checkout()">Finalizar compra</button>
+    <button class="btn btn-wa" onclick="checkout()">Pedir por WhatsApp</button>
   </div>
 </aside>
-
-<!-- Account modal -->
-<div class="modal-overlay" id="account-modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeAccount()" aria-label="Cerrar">&times;</button>
-    <div class="tabs">
-      <button class="tab active" id="tab-login" onclick="switchTab('login')">Entrar</button>
-      <button class="tab" id="tab-register" onclick="switchTab('register')">Registro</button>
-    </div>
-    <div id="form-login">
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="login-email" placeholder="tu@email.com">
-      </div>
-      <div class="field">
-        <label>Contraseña</label>
-        <input type="password" id="login-pwd" placeholder="••••••••">
-      </div>
-      <button class="btn" onclick="doLogin()">Iniciar sesión</button>
-    </div>
-    <div id="form-register" style="display:none;">
-      <div class="field">
-        <label>Nombre</label>
-        <input type="text" id="reg-name" placeholder="Tu nombre">
-      </div>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="reg-email" placeholder="tu@email.com">
-      </div>
-      <div class="field">
-        <label>Contraseña</label>
-        <input type="password" id="reg-pwd" placeholder="••••••••">
-      </div>
-      <button class="btn" onclick="doRegister()">Crear cuenta</button>
-    </div>
-  </div>
-</div>
 
 <!-- Product detail modal -->
 <div class="modal-overlay" id="product-modal">
@@ -1560,6 +1531,7 @@
   }
 
   // ---------- Cart ----------
+  const WHATSAPP_NUMBER = '5493515146361'; // Cambiar acá para apuntar a otro número (sin + ni espacios)
   const cart = [];
 
   function addProductToCart(id) {
@@ -1629,11 +1601,12 @@
   }
   function checkout() {
     if (cart.length === 0) return;
+    const lines = cart.map(i => `• ${i.name} x${i.qty} — ${formatPrice(i.price * i.qty)}`);
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    toast('Pedido realizado: ' + formatPrice(total), 'success');
-    cart.length = 0;
-    refreshCart();
-    closeCart();
+    const msg = `Hola SUPLEFIT! Quiero hacer este pedido:\n\n${lines.join('\n')}\n\n*Total: ${formatPrice(total)}*`;
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+    toast('Abriendo WhatsApp...', 'success');
   }
 
   // ---------- Search ----------
@@ -1729,33 +1702,6 @@
     }
   }
 
-  // ---------- Account ----------
-  function openAccount() {
-    document.getElementById('account-modal').classList.add('active');
-  }
-  function closeAccount() {
-    document.getElementById('account-modal').classList.remove('active');
-  }
-  function switchTab(which) {
-    document.getElementById('tab-login').classList.toggle('active', which === 'login');
-    document.getElementById('tab-register').classList.toggle('active', which === 'register');
-    document.getElementById('form-login').style.display = which === 'login' ? 'block' : 'none';
-    document.getElementById('form-register').style.display = which === 'register' ? 'block' : 'none';
-  }
-  function doLogin() {
-    const email = document.getElementById('login-email').value.trim();
-    if (!email.includes('@')) { toast('Email inválido', 'error'); return; }
-    closeAccount();
-    toast('Bienvenido de nuevo', 'success');
-  }
-  function doRegister() {
-    const email = document.getElementById('reg-email').value.trim();
-    const name = document.getElementById('reg-name').value.trim();
-    if (!name || !email.includes('@')) { toast('Completa los campos', 'error'); return; }
-    closeAccount();
-    toast('Cuenta creada, ' + name, 'success');
-  }
-
   // ---------- Newsletter ----------
   function openNewsletter() {
     document.getElementById('newsletter-modal').classList.add('active');
@@ -1795,7 +1741,7 @@
   }
 
   // Close any modal on overlay click
-  ['account-modal','product-modal','newsletter-modal','info-modal'].forEach(id => {
+  ['product-modal','newsletter-modal','info-modal'].forEach(id => {
     document.getElementById(id).addEventListener('click', (e) => {
       if (e.target.id === id) document.getElementById(id).classList.remove('active');
     });
