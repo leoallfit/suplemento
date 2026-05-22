@@ -1458,9 +1458,11 @@
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           <span id="gh-token-mask" style="color:#888;font-family:monospace;font-size:13px;flex:1;">ghp_•••••••••</span>
           <button class="editor-btn" onclick="testGitHub()">Probar</button>
+          <button class="editor-btn" onclick="forcePush()">Sincronizar ahora</button>
           <button class="editor-btn danger" onclick="disconnectGitHub()">Desconectar</button>
         </div>
       </div>
+      <div id="gh-error" style="display:none; margin-top:14px; padding:12px 14px; background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.4); color:#ff8a95; font-size:13px;"></div>
     </div>
 
     <div class="admin-section" style="padding:24px;">
@@ -1601,6 +1603,17 @@
     return null;
   }
 
+  function showGhError(msg) {
+    const el = document.getElementById('gh-error');
+    if (!el) return;
+    if (msg) {
+      el.textContent = msg;
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+
   // Push PRODUCTS to GitHub via API
   async function pushToGitHub(commitMsg) {
     const token = getToken();
@@ -1609,10 +1622,13 @@
       return false;
     }
     setSyncStatus('syncing');
+    showGhError('');
     const sha = await fetchCurrentSha();
     if (!sha) {
       setSyncStatus('error');
-      toast('Error al leer del repo. ¿Token válido?', 'error');
+      const msg = 'No se pudo leer products.json del repo. Verificá que el token tenga acceso al repo leoallfit/suplemento.';
+      showGhError(msg);
+      toast('Error: token sin acceso al repo', 'error');
       return false;
     }
     try {
@@ -1633,18 +1649,32 @@
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'HTTP ' + res.status);
+        const detail = err.message || ('HTTP ' + res.status);
+        let hint = '';
+        if (res.status === 403) hint = ' → Token sin permiso de escritura. Generá uno NUEVO con el scope "public_repo" marcado.';
+        else if (res.status === 401) hint = ' → Token inválido o vencido.';
+        else if (res.status === 404) hint = ' → No encuentra el archivo. Revisá owner/repo.';
+        else if (res.status === 422) hint = ' → Conflicto. Recargá la página y probá de nuevo.';
+        throw new Error(detail + hint);
       }
       const data = await res.json();
       if (data.content && data.content.sha) setRemoteSha(data.content.sha);
       setSyncStatus('synced');
+      showGhError('');
       return true;
     } catch(e) {
-      console.error('Push falló:', e);
+      console.error('[pushToGitHub] Falló:', e);
       setSyncStatus('error');
-      toast('Error al guardar: ' + e.message, 'error');
+      showGhError('Error al subir: ' + e.message);
+      toast('Error al guardar (ver detalle en admin)', 'error');
       return false;
     }
+  }
+
+  // Manual push (no debounce)
+  async function forcePush() {
+    const ok = await pushToGitHub('Manual sync from admin');
+    if (ok) toast('Sincronizado ✓', 'success');
   }
 
   // Debounced auto-sync
@@ -2020,16 +2050,18 @@
     if (!t) { toast('Pegá tu token', 'error'); return; }
     setToken(t);
     setSyncStatus('syncing');
-    const sha = await fetchCurrentSha();
-    if (!sha) {
+    showGhError('');
+    // Hacer un push real para verificar permisos de escritura
+    const ok = await pushToGitHub('Connect: verificar acceso de escritura');
+    if (!ok) {
+      // pushToGitHub ya muestra el error detallado
       setToken('');
-      setSyncStatus('error');
-      toast('Token inválido o sin permisos sobre el repo', 'error');
+      updateTokenUI();
       return;
     }
     input.value = '';
     updateTokenUI();
-    toast('Conectado a GitHub', 'success');
+    toast('Conectado y verificado ✓', 'success');
   }
 
   function disconnectGitHub() {
