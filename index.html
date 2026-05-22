@@ -2145,6 +2145,69 @@
       <div class="combos-list" id="combos-editor"></div>
     </div>
 
+    <!-- Google Sheets -->
+    <div class="admin-section" style="padding:24px;">
+      <div class="editor-toolbar">
+        <h2>Precios desde Google Sheets</h2>
+        <span class="sync-status sync-idle" id="sheets-sync-status">Sin configurar</span>
+      </div>
+      <p style="color:#888;font-size:13px;margin-bottom:20px;">
+        Gestion&#225; los precios desde una planilla. Cada vez que alguien abre la p&#225;gina los precios se actualizan autom&#225;ticamente desde tu Google Sheet.
+      </p>
+
+      <!-- Paso 1 -->
+      <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;">
+        <div style="background:#0066ff;color:#fff;min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;margin-top:1px;">1</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Cre&#225; la planilla en Google Sheets</div>
+          <div style="color:#888;font-size:12px;margin-bottom:10px;">Copiá la plantilla con tus productos y pegala en una hoja nueva. Las columnas son: <strong style="color:#ccc;">ID · Nombre · Precio Venta · Precio Lista · Ganancia $ · Ganancia %</strong> (las últimas dos son fórmulas automáticas).</div>
+          <button class="editor-btn" onclick="copySheetTemplate()">&#128203; Copiar plantilla</button>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;">
+        <div style="background:#0066ff;color:#fff;min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;margin-top:1px;">2</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Cre&#225; un Apps Script en tu planilla</div>
+          <div style="color:#888;font-size:12px;margin-bottom:8px;">En Google Sheets → <strong style="color:#ccc;">Extensiones → Apps Script</strong>. Borrá todo el código y pegá este:</div>
+          <div style="position:relative;background:#0a0a0a;border:1px solid #222;border-radius:3px;padding:12px 14px;">
+            <pre style="margin:0;font-family:monospace;font-size:11px;color:#aaa;white-space:pre-wrap;line-height:1.5;">function doGet() {
+  var s = SpreadsheetApp.getActiveSheet();
+  var d = s.getDataRange().getValues();
+  var rows = [];
+  for (var i = 1; i &lt; d.length; i++) {
+    if (!d[i][0]) continue;
+    rows.push({ id: d[i][0], name: d[i][1],
+      sale_price: d[i][2], list_price: d[i][3] });
+  }
+  return ContentService
+    .createTextOutput(JSON.stringify(rows))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+            <button class="editor-btn" style="position:absolute;top:8px;right:8px;padding:3px 10px;font-size:10px;" onclick="copyAppsScriptCode()">Copiar</button>
+          </div>
+          <div style="color:#888;font-size:12px;margin-top:10px;">Despu&#233;s: <strong style="color:#fff;">Implementar → Nueva implementaci&#243;n → Tipo: Aplicaci&#243;n web → Acceso: Cualquiera → Implementar</strong>. Copi&#225; la URL que te da.</div>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div style="display:flex;gap:14px;align-items:flex-start;">
+        <div style="background:#0066ff;color:#fff;min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;margin-top:1px;">3</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:8px;">Peg&#225; la URL aqu&#237; y guard&#225;</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" id="sheets-url-input" placeholder="https://script.google.com/macros/s/…/exec"
+              style="flex:1;min-width:200px;background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;padding:9px 12px;font-size:12px;font-family:inherit;outline:none;">
+            <button class="editor-btn" onclick="testSheetConnection()">Probar</button>
+            <button class="btn" onclick="saveSheetUrl()">Guardar</button>
+          </div>
+          <div id="sheets-test-status" style="font-size:12px;color:#888;margin-top:6px;min-height:18px;"></div>
+          <div style="color:#666;font-size:11px;margin-top:8px;">&#9432; Cada vez que modific&#225;s el Precio Venta en Sheets, la p&#225;gina lo muestra autom&#225;ticamente al recargar. El Precio Lista y Ganancia son s&#243;lo para vos.</div>
+        </div>
+      </div>
+    </div>
+
     <div class="admin-section" style="padding:24px;">
       <div class="editor-toolbar">
         <h2>Logos de Marcas</h2>
@@ -2221,6 +2284,10 @@
   const GH_BRANDS_PATH = 'brands.json';
   const GH_BRANDS_API = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_BRANDS_PATH}`;
   const BRANDS_STORAGE_KEY = 'puresupp_brands_v1';
+  const GH_CONFIG_PATH = 'config.json';
+  const GH_CONFIG_API = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_CONFIG_PATH}`;
+  const CONFIG_STORAGE_KEY = 'suplefit_config_v1';
+  let SITE_CONFIG = {};
   let BRAND_LOGOS = {};
 
   function saveBrandsLocal() {
@@ -2288,6 +2355,105 @@
     if (!getToken()) return;
     if (brandsSyncTimer) clearTimeout(brandsSyncTimer);
     brandsSyncTimer = setTimeout(() => pushBrandsToGitHub('Update brand logos'), 1200);
+  }
+
+  // ---------- Config (sheets URL, etc.) ----------
+  async function fetchRemoteConfig() {
+    try {
+      const res = await fetch(GH_CONFIG_PATH + '?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        SITE_CONFIG = data;
+        try { localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+        return true;
+      }
+    } catch(e) {}
+    return false;
+  }
+  function loadConfigLocal() {
+    try {
+      const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
+      if (raw) SITE_CONFIG = JSON.parse(raw) || {};
+    } catch(e) {}
+  }
+  async function saveSheetUrl() {
+    const url = (document.getElementById('sheets-url-input')?.value || '').trim();
+    SITE_CONFIG.sheets_url = url || '';
+    try { localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(SITE_CONFIG)); } catch(e) {}
+    if (!getToken()) { toast('Conect&#225; GitHub para guardar en todos los dispositivos', 'error'); return; }
+    updateSheetStatus('syncing');
+    try {
+      const headers = { Authorization: 'Bearer ' + getToken(), 'Content-Type': 'application/json' };
+      let sha = null;
+      const chk = await fetch(GH_CONFIG_API + '?ref=main', { headers, cache: 'no-store' });
+      if (chk.ok) { const cd = await chk.json(); sha = cd.sha || null; }
+      const body = { message: 'config: update sheets_url', content: b64encode(JSON.stringify(SITE_CONFIG, null, 2)) };
+      if (sha) body.sha = sha;
+      const res = await fetch(GH_CONFIG_API, { method: 'PUT', headers, body: JSON.stringify(body) });
+      if (res.ok) { updateSheetStatus(url ? 'ok' : 'idle'); toast('URL guardada y subida a GitHub ✓', 'success'); }
+      else { updateSheetStatus('error'); toast('Error al subir a GitHub', 'error'); }
+    } catch(e) { updateSheetStatus('error'); toast('Error: ' + e.message, 'error'); }
+  }
+  async function testSheetConnection() {
+    const url = (document.getElementById('sheets-url-input')?.value || '').trim() || SITE_CONFIG.sheets_url;
+    if (!url) { toast('Ingres&#225; la URL del Apps Script', 'error'); return; }
+    updateSheetStatus('syncing');
+    const statusEl = document.getElementById('sheets-test-status');
+    if (statusEl) statusEl.textContent = 'Probando...';
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (!Array.isArray(data)) throw new Error('Formato inesperado');
+      updateSheetStatus('ok');
+      if (statusEl) statusEl.textContent = '✓ Conectado · ' + data.length + ' productos';
+      toast('Sheets conectado · ' + data.length + ' productos', 'success');
+    } catch(e) {
+      updateSheetStatus('error');
+      if (statusEl) statusEl.textContent = '✗ Error: ' + e.message;
+      toast('No se pudo conectar: ' + e.message, 'error');
+    }
+  }
+  function updateSheetStatus(state) {
+    const el = document.getElementById('sheets-sync-status');
+    if (!el) return;
+    const M = { idle:{t:'Sin configurar',c:'sync-idle'}, ok:{t:'Conectado',c:'sync-ok'}, syncing:{t:'Conectando…',c:'sync-syncing'}, error:{t:'Error',c:'sync-error'} };
+    const info = M[state] || M.idle;
+    el.textContent = info.t; el.className = 'sync-status ' + info.c;
+  }
+  async function applySheetPrices() {
+    const url = SITE_CONFIG.sheets_url;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      let changed = false;
+      data.forEach(row => {
+        const p = PRODUCTS.find(x => x.id === parseInt(row.id));
+        if (p && row.sale_price !== '' && row.sale_price !== undefined && row.sale_price !== null) {
+          const price = parseFloat(row.sale_price);
+          if (!isNaN(price) && price > 0) { p.price = price; changed = true; }
+        }
+      });
+      if (changed) renderProducts();
+    } catch(e) { console.warn('Sheets sync:', e.message); }
+  }
+  function copySheetTemplate() {
+    const rows = ['ID\tNombre\tPrecio Venta\tPrecio Lista\tGanancia $\tGanancia %'];
+    PRODUCTS.forEach((p, i) => {
+      const row = i + 2;
+      rows.push(`${p.id}\t${p.name}\t${p.price}\t\t=C${row}-D${row}\t=SI(D${row}>0,((C${row}-D${row})/D${row})*100,"")`);
+    });
+    const text = rows.join('\n');
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('Plantilla copiada – peg&#225; en Google Sheets', 'success'));
+    else { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove(); toast('Copiado', 'success'); }
+  }
+  function copyAppsScriptCode() {
+    const code = `function doGet() {\n  var s = SpreadsheetApp.getActiveSheet();\n  var d = s.getDataRange().getValues();\n  var rows = [];\n  for (var i = 1; i < d.length; i++) {\n    if (!d[i][0]) continue;\n    rows.push({ id: d[i][0], name: d[i][1], sale_price: d[i][2], list_price: d[i][3] });\n  }\n  return ContentService\n    .createTextOutput(JSON.stringify(rows))\n    .setMimeType(ContentService.MimeType.JSON);\n}`;
+    if (navigator.clipboard) navigator.clipboard.writeText(code).then(() => toast('C&#243;digo copiado', 'success'));
+    else { const el = document.createElement('textarea'); el.value = code; document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove(); toast('Copiado', 'success'); }
   }
 
   function saveLocal() {
@@ -2465,17 +2631,21 @@
 
   // On boot: try fetch remote, fallback to local cache
   (async function bootProducts() {
-    const [remoteOk, brandsOk] = await Promise.all([
+    const [remoteOk, brandsOk, configOk] = await Promise.all([
       fetchRemoteProducts(),
-      fetchRemoteBrands()
+      fetchRemoteBrands(),
+      fetchRemoteConfig()
     ]);
     if (!remoteOk) loadLocal();
     if (!brandsOk) loadBrandsLocal();
+    if (!configOk) loadConfigLocal();
     // Migrar campo legacy size (string) → sizes (array)
     PRODUCTS.forEach(p => { if (!p.sizes) p.sizes = p.size ? [p.size] : []; });
     if (typeof renderProducts === 'function') renderProducts();
     if (typeof renderMarcas === 'function') renderMarcas();
-    if (typeof refreshCart === 'function') refreshCart(); // restaurar badge del carrito
+    if (typeof refreshCart === 'function') refreshCart();
+    // Aplicar precios desde Google Sheets (si está configurado)
+    await applySheetPrices();
   })();
 
   function renderProducts() {
@@ -3006,6 +3176,10 @@
       renderCombosEditor();
       renderBrandsEditor();
       updateTokenUI();
+      // Sheets section
+      const sheetInput = document.getElementById('sheets-url-input');
+      if (sheetInput) sheetInput.value = SITE_CONFIG.sheets_url || '';
+      updateSheetStatus(SITE_CONFIG.sheets_url ? 'ok' : 'idle');
     } else {
       document.getElementById('pwd-error').textContent = 'Clave incorrecta';
       document.getElementById('pwd-input').value = '';
