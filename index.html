@@ -38,42 +38,53 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 18px 24px;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
-    gap: 24px;
+    gap: 16px;
   }
+  .header-side { display: flex; align-items: center; gap: 16px; }
+  .header-left { justify-content: flex-start; }
+  .header-right { justify-content: flex-end; }
   .logo {
     font-weight: 900;
-    font-size: 24px;
+    font-size: 26px;
     letter-spacing: 2px;
+    cursor: pointer;
+    text-align: center;
+    user-select: none;
+    transition: opacity 0.2s;
   }
+  .logo:hover { opacity: 0.85; }
   .logo span { color: #0066ff; }
-  nav ul {
-    display: flex;
-    gap: 28px;
-    list-style: none;
-  }
-  nav a {
-    font-size: 14px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: color 0.2s;
-  }
-  nav a:hover { color: #0066ff; }
-  .icons {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-  }
   .icon-btn {
     background: none;
     border: none;
     color: #fff;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 22px;
     position: relative;
+    padding: 4px;
+    line-height: 1;
+    transition: transform 0.15s, color 0.15s;
+  }
+  .icon-btn:hover { color: #0066ff; transform: scale(1.1); }
+  .icon-btn.search-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid #2a2a2a;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .icon-btn.search-btn:hover {
+    background: #0066ff;
+    border-color: #0066ff;
+    color: #fff;
+    transform: none;
   }
   .cart-badge {
     position: absolute;
@@ -1033,7 +1044,6 @@
 
   /* Responsive */
   @media (max-width: 900px) {
-    nav { display: none; }
     .hero h1 { font-size: 44px; }
     .hero { height: 420px; }
     .categories { grid-template-columns: repeat(2, 1fr); }
@@ -1043,8 +1053,9 @@
   }
   @media (max-width: 600px) {
     .topbar { font-size: 11px; padding: 6px 10px; letter-spacing: 0.3px; }
-    .header-inner { padding: 14px 16px; gap: 12px; }
-    .icons { gap: 12px; }
+    .header-inner { padding: 14px 16px; gap: 10px; }
+    .header-side { gap: 10px; }
+    .icon-btn.search-btn { width: 36px; height: 36px; font-size: 16px; }
     .logo { font-size: 20px; letter-spacing: 1.5px; }
     .hero { height: auto; min-height: 420px; padding: 60px 0; }
     .hero-content { padding: 0 16px; }
@@ -1113,18 +1124,11 @@
 
 <header>
   <div class="header-inner">
-    <div class="logo"><span>SUPLE</span>FIT</div>
-    <nav>
-      <ul>
-        <li><a href="#" onclick="filterCategory('proteinas');return false;">Proteínas</a></li>
-        <li><a href="#" onclick="filterCategory('creatinas');return false;">Creatinas</a></li>
-        <li><a href="#" onclick="filterCategory('preentreno');return false;">Pre-Entreno</a></li>
-        <li><a href="#" onclick="filterCategory('quemadores');return false;">Quemadores</a></li>
-        <li><a href="#" onclick="filterCategory('recuperacion');return false;">Recuperación</a></li>
-      </ul>
-    </nav>
-    <div class="icons">
-      <button class="icon-btn" aria-label="Buscar" onclick="toggleSearch()">&#9906;</button>
+    <div class="header-side header-left">
+      <button class="icon-btn search-btn" aria-label="Buscar" onclick="toggleSearch()">&#128269;</button>
+    </div>
+    <a href="#" class="logo" onclick="goHome();return false;"><span>SUPLE</span>FIT</a>
+    <div class="header-side header-right">
       <button class="icon-btn" aria-label="Carrito" onclick="openCart()">
         &#128722;<span class="cart-badge" id="cart-count">0</span>
       </button>
@@ -1865,6 +1869,17 @@
     document.querySelectorAll('.product').forEach(p => p.style.display = '');
     document.getElementById('filter-bar').classList.remove('active');
   }
+  function goHome() {
+    // Limpiar filtro y búsqueda
+    document.querySelectorAll('.product').forEach(p => p.style.display = '');
+    document.getElementById('filter-bar').classList.remove('active');
+    const searchBar = document.getElementById('search-bar');
+    if (searchBar.classList.contains('active')) searchBar.classList.remove('active');
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   function scrollToProducts() {
     document.getElementById('productos').scrollIntoView({ behavior: 'smooth' });
   }
