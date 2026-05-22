@@ -719,37 +719,119 @@
   .search-bar {
     background: #0d0d0d;
     border-bottom: 1px solid #1a1a1a;
-    display: none;
-    padding: 16px 24px;
-    position: sticky;
-    top: 73px;
-    z-index: 49;
+    padding: 12px 24px;
   }
-  .search-bar.active { display: block; }
   .search-bar-inner {
-    max-width: 800px;
+    max-width: 600px;
     margin: 0 auto;
     display: flex;
-    gap: 12px;
+    align-items: center;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    padding: 4px 14px;
+    gap: 10px;
+    transition: border-color 0.15s;
+  }
+  .search-bar-inner:focus-within { border-color: #0066ff; }
+  .search-bar .search-icon {
+    color: #888;
+    font-size: 16px;
+    line-height: 1;
   }
   .search-bar input {
     flex: 1;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: transparent;
+    border: none;
     color: #fff;
-    padding: 14px 18px;
-    font-size: 15px;
+    padding: 10px 0;
+    font-size: 14px;
     outline: none;
     font-family: inherit;
   }
-  .search-bar input:focus { border-color: #0066ff; }
-  .search-bar button {
-    background: transparent;
-    border: 1px solid #2a2a2a;
-    color: #ccc;
-    padding: 0 18px;
+  .search-bar input::placeholder { color: #666; }
+
+  /* Marcas carousel */
+  #marcas { padding: 50px 24px 30px; }
+  .marcas-title {
+    font-size: 22px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 24px;
+  }
+  .marcas-wrap {
+    position: relative;
+    padding: 0 50px;
+  }
+  .marcas-carousel {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 4px 0;
+  }
+  .marcas-carousel::-webkit-scrollbar { display: none; }
+  .marca-circle {
+    flex: 0 0 130px;
+    height: 130px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    font-size: 18px;
+    padding: 14px;
+    text-align: center;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0a0a0a;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    line-height: 1.15;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+  }
+  .marca-circle img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .marca-circle:hover {
+    transform: scale(1.06);
+    box-shadow: 0 6px 20px rgba(0, 102, 255, 0.3);
+  }
+  .marcas-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid #2a2a2a;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .marcas-prev { left: 0; }
+  .marcas-next { right: 0; }
+  .marcas-arrow:hover {
+    background: #0066ff;
+    border-color: #0066ff;
+  }
+  @media (max-width: 600px) {
+    #marcas { padding: 40px 16px 20px; }
+    .marcas-wrap { padding: 0 36px; }
+    .marca-circle { flex: 0 0 100px; height: 100px; font-size: 11px; padding: 10px; }
+    .marcas-arrow { width: 32px; height: 32px; font-size: 13px; }
   }
   .search-bar button:hover { border-color: #0066ff; color: #0066ff; }
 
@@ -1311,7 +1393,6 @@
     </div>
     <a href="#" class="logo" onclick="goHome();return false;"><span>SUPLE</span>FIT</a>
     <div class="header-side header-right">
-      <button class="icon-btn search-btn" aria-label="Buscar" onclick="toggleSearch()">&#128269;</button>
       <button class="icon-btn" aria-label="Carrito" onclick="openCart()">
         &#128722;<span class="cart-badge" id="cart-count">0</span>
       </button>
@@ -1319,8 +1400,8 @@
   </div>
   <div class="search-bar" id="search-bar">
     <div class="search-bar-inner">
+      <span class="search-icon">&#128269;</span>
       <input type="text" id="search-input" placeholder="Buscar productos..." oninput="searchProducts(this.value)">
-      <button onclick="toggleSearch()" aria-label="Cerrar">&times;</button>
     </div>
   </div>
   <div class="filter-bar" id="filter-bar">
@@ -1334,6 +1415,17 @@
     <h1>POTENCIA<br>TU <span>RENDIMIENTO</span></h1>
     <p>Suplementos premium para deportistas que no se conforman. Calidad certificada, resultados reales.</p>
     <a href="#productos" class="btn" onclick="scrollToProducts();return false;">Ver Productos</a>
+  </div>
+</section>
+
+<section id="marcas">
+  <div class="container">
+    <h2 class="marcas-title">Marcas</h2>
+    <div class="marcas-wrap">
+      <button class="marcas-arrow marcas-prev" onclick="scrollMarcas(-1)" aria-label="Anterior">&#10094;</button>
+      <div class="marcas-carousel" id="marcas-carousel"></div>
+      <button class="marcas-arrow marcas-next" onclick="scrollMarcas(1)" aria-label="Siguiente">&#10095;</button>
+    </div>
   </div>
 </section>
 
@@ -1926,6 +2018,7 @@
     const remoteOk = await fetchRemoteProducts();
     if (!remoteOk) loadLocal();
     if (typeof renderProducts === 'function') renderProducts();
+    if (typeof renderMarcas === 'function') renderMarcas();
   })();
 
   function renderProducts() {
@@ -2100,6 +2193,21 @@
     bar.classList.add('active');
     scrollToProducts();
   }
+  function renderMarcas() {
+    const el = document.getElementById('marcas-carousel');
+    if (!el) return;
+    const brands = [...new Set(PRODUCTS.map(p => p.brand).filter(Boolean))].sort();
+    el.innerHTML = brands.map(b => `
+      <div class="marca-circle" onclick="filterBrand('${b.replace(/'/g, "\\'")}')" title="${b}">${b}</div>
+    `).join('');
+  }
+
+  function scrollMarcas(dir) {
+    const el = document.getElementById('marcas-carousel');
+    if (!el) return;
+    el.scrollBy({ left: dir * 280, behavior: 'smooth' });
+  }
+
   function filterBrand(brand) {
     document.querySelectorAll('.product').forEach(card => {
       const id = parseInt(card.dataset.id);
@@ -2455,6 +2563,7 @@
     p[field] = value;
     saveProducts();
     renderProducts();
+    if (field === 'brand') renderMarcas();
     toast('Cambios guardados', 'success');
   }
 
@@ -2527,6 +2636,7 @@
 
   // Render product grid on load
   renderProducts();
+  renderMarcas();
 </script>
 
 </body>
