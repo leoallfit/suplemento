@@ -1126,6 +1126,80 @@
   }
   .modal-close:hover { color: #fff; }
 
+  /* Galería de fotos del producto (modal) */
+  .pm-gallery {
+    position: relative;
+    overflow: hidden;
+    background: #f0f0f0;
+  }
+  .pm-gallery .gallery-main-img {
+    width: 100%; height: 100%;
+    object-fit: contain; background: #fff;
+    cursor: zoom-in; display: block;
+  }
+  .pm-gallery .gallery-emoji {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 90px;
+  }
+  .gallery-nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(0,0,0,0.55); border: none; color: #fff;
+    width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+    font-size: 18px; line-height: 1; display: flex; align-items: center;
+    justify-content: center; z-index: 3; padding: 0; transition: background 0.15s;
+  }
+  .gallery-nav-btn:hover { background: rgba(0,0,0,0.85); }
+  .gallery-nav-prev { left: 6px; }
+  .gallery-nav-next { right: 6px; }
+  .gallery-dots {
+    position: absolute; bottom: 7px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 5px;
+  }
+  .gallery-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(0,0,0,0.3); cursor: pointer; transition: background 0.15s;
+  }
+  .gallery-dot.active { background: #0066ff; }
+
+  /* Miniaturas en el admin */
+  .img-thumb-strip { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .img-thumb {
+    width: 46px; height: 46px; position: relative;
+    background: #f0f0f0; overflow: hidden; border-radius: 2px;
+    border: 1px solid #2a2a2a; flex-shrink: 0;
+  }
+  .img-thumb img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+  .img-thumb .img-remove {
+    position: absolute; top: 0; right: 0;
+    background: rgba(255,71,87,0.9); border: none; color: #fff;
+    width: 16px; height: 16px; font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1; padding: 0;
+  }
+  .img-thumb-add {
+    width: 46px; height: 46px; background: #1a1a1a;
+    border: 1px dashed #333; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; color: #555; font-size: 22px;
+    border-radius: 2px; transition: border-color 0.15s, color 0.15s;
+  }
+  .img-thumb-add:hover { border-color: #0066ff; color: #0066ff; }
+
+  /* Category covers */
+  .category { position: relative; }
+  .category.has-cover { padding: 0; overflow: hidden; }
+  .category.has-cover .cat-cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; opacity: 0.6;
+  }
+  .category.has-cover .category-label {
+    position: relative; z-index: 1; padding: 40px 20px;
+    text-align: center; width: 100%;
+  }
+  .category.has-cover .category-label h3 {
+    color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+  }
+
   /* Botón cerrar del modal de producto: grande y llamativo */
   #product-modal .modal-close {
     width: 44px;
@@ -1769,40 +1843,7 @@
       <h2>Categorías</h2>
       <p>Encontrá lo que tu cuerpo necesita</p>
     </div>
-    <div class="categories">
-      <div class="category" onclick="filterCategory('proteinas')">
-        <div class="category-icon">&#128170;</div>
-        <h3>Proteínas</h3>
-      </div>
-      <div class="category" onclick="filterCategory('creatinas')">
-        <div class="category-icon">&#9883;</div>
-        <h3>Creatinas</h3>
-      </div>
-      <div class="category" onclick="filterCategory('preentreno')">
-        <div class="category-icon">&#9889;</div>
-        <h3>Pre-Entreno</h3>
-      </div>
-      <div class="category" onclick="filterCategory('vitaminas')">
-        <div class="category-icon">&#127818;</div>
-        <h3>Vitaminas</h3>
-      </div>
-      <div class="category" onclick="filterCategory('quemadores')">
-        <div class="category-icon">&#128293;</div>
-        <h3>Quemadores</h3>
-      </div>
-      <div class="category" onclick="filterCategory('recuperacion')">
-        <div class="category-icon">&#128167;</div>
-        <h3>Recuperación</h3>
-      </div>
-      <div class="category" onclick="filterCategory('volumen')">
-        <div class="category-icon">&#128200;</div>
-        <h3>Volumen</h3>
-      </div>
-      <div class="category" onclick="filterCategory('accesorios')">
-        <div class="category-icon">&#129380;</div>
-        <h3>Accesorios</h3>
-      </div>
-    </div>
+    <div class="categories" id="categories-grid"></div>
   </div>
 </section>
 
@@ -2011,7 +2052,13 @@
   <div class="modal" style="max-width:560px; max-height: 90vh; overflow-y: auto;">
     <button class="modal-close" onclick="closeProduct()" aria-label="Cerrar">&times;</button>
     <div class="product-modal-body">
-      <div class="product-modal-img" id="pm-img"></div>
+      <div class="product-modal-img pm-gallery" id="pm-gallery" onclick="openLightboxCurrent()">
+        <div class="gallery-emoji" id="pm-gallery-emoji"></div>
+        <img class="gallery-main-img" id="pm-gallery-img" src="" alt="" style="display:none;">
+        <button class="gallery-nav-btn gallery-nav-prev" id="pm-gnav-prev" onclick="event.stopPropagation();galleryNav(-1);" style="display:none;">&#8249;</button>
+        <button class="gallery-nav-btn gallery-nav-next" id="pm-gnav-next" onclick="event.stopPropagation();galleryNav(1);" style="display:none;">&#8250;</button>
+        <div class="gallery-dots" id="pm-gdots"></div>
+      </div>
       <div class="product-modal-info">
         <div class="brand" id="pm-brand">Fit</div>
         <h3 id="pm-name"></h3>
@@ -2208,6 +2255,17 @@
       </div>
     </div>
 
+    <!-- Category covers -->
+    <div class="admin-section" style="padding:24px;">
+      <div class="editor-toolbar">
+        <h2>Portadas de Categorías</h2>
+      </div>
+      <p style="color:#888;font-size:13px;margin-bottom:16px;">
+        Subí una foto para cada categoría. Se muestra de fondo en la sección de inicio. Recomendado: imagen horizontal, máx 400KB.
+      </p>
+      <div id="cat-covers-editor"></div>
+    </div>
+
     <div class="admin-section" style="padding:24px;">
       <div class="editor-toolbar">
         <h2>Logos de Marcas</h2>
@@ -2269,7 +2327,8 @@
   }
   function iconFor(p) { return ICONS[p.category] || '&#128170;'; }
   function imgFor(p) {
-    if (p.image) return `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;background:#fff;">`;
+    const src = (p.images && p.images.length) ? p.images[0] : (p.image || null);
+    if (src) return `<img src="${src}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;background:#fff;">`;
     return `<span style="font-size:inherit;">${iconFor(p)}</span>`;
   }
 
@@ -2383,17 +2442,8 @@
     try { localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(SITE_CONFIG)); } catch(e) {}
     if (!getToken()) { toast('Conect&#225; GitHub para guardar en todos los dispositivos', 'error'); return; }
     updateSheetStatus('syncing');
-    try {
-      const headers = { Authorization: 'Bearer ' + getToken(), 'Content-Type': 'application/json' };
-      let sha = null;
-      const chk = await fetch(GH_CONFIG_API + '?ref=main', { headers, cache: 'no-store' });
-      if (chk.ok) { const cd = await chk.json(); sha = cd.sha || null; }
-      const body = { message: 'config: update sheets_url', content: b64encode(JSON.stringify(SITE_CONFIG, null, 2)) };
-      if (sha) body.sha = sha;
-      const res = await fetch(GH_CONFIG_API, { method: 'PUT', headers, body: JSON.stringify(body) });
-      if (res.ok) { updateSheetStatus(url ? 'ok' : 'idle'); toast('URL guardada y subida a GitHub ✓', 'success'); }
-      else { updateSheetStatus('error'); toast('Error al subir a GitHub', 'error'); }
-    } catch(e) { updateSheetStatus('error'); toast('Error: ' + e.message, 'error'); }
+    await pushSiteConfig('config: update sheets_url');
+    updateSheetStatus(url ? 'ok' : 'idle');
   }
   async function testSheetConnection() {
     const url = (document.getElementById('sheets-url-input')?.value || '').trim() || SITE_CONFIG.sheets_url;
@@ -2639,12 +2689,15 @@
     if (!remoteOk) loadLocal();
     if (!brandsOk) loadBrandsLocal();
     if (!configOk) loadConfigLocal();
-    // Migrar campo legacy size (string) → sizes (array)
-    PRODUCTS.forEach(p => { if (!p.sizes) p.sizes = p.size ? [p.size] : []; });
-    if (typeof renderProducts === 'function') renderProducts();
-    if (typeof renderMarcas === 'function') renderMarcas();
-    if (typeof refreshCart === 'function') refreshCart();
-    // Aplicar precios desde Google Sheets (si está configurado)
+    // Migrar campos legacy
+    PRODUCTS.forEach(p => {
+      if (!p.images) p.images = p.image ? [p.image] : [];
+      if (!p.sizes)  p.sizes  = p.size  ? [p.size]  : [];
+    });
+    if (typeof renderCategories === 'function') renderCategories();
+    if (typeof renderProducts   === 'function') renderProducts();
+    if (typeof renderMarcas     === 'function') renderMarcas();
+    if (typeof refreshCart      === 'function') refreshCart();
     await applySheetPrices();
   })();
 
@@ -2973,14 +3026,7 @@
     currentFlavor = (p.flavors && p.flavors.length) ? p.flavors[0] : null;
     const pSizes = p.sizes && p.sizes.length ? p.sizes : (p.size ? [p.size] : []);
     currentSize = pSizes.length ? pSizes[0] : null;
-
-    const pmImg = document.getElementById('pm-img');
-    pmImg.innerHTML = imgFor(p);
-    pmImg.style.padding = p.image ? '0' : '';
-    pmImg.style.overflow = 'hidden';
-    pmImg.classList.toggle('has-image', !!p.image);
-    pmImg.style.cursor = p.image ? 'zoom-in' : 'default';
-    pmImg.onclick = () => { if (p.image) openLightbox(p.image, p.name); };
+    initProductGallery(p);
     document.getElementById('pm-brand').textContent = p.brand;
     document.getElementById('pm-name').textContent = p.name;
     document.getElementById('pm-price').textContent = formatPrice(p.price);
@@ -3062,6 +3108,154 @@
   function toggleAccordion(wrapId) {
     const el = document.getElementById(wrapId);
     if (el) el.classList.toggle('open');
+  }
+
+  // ---------- Galería de fotos del producto ----------
+  let currentGalleryIdx = 0;
+
+  function initProductGallery(p) {
+    const images = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
+    currentGalleryIdx = 0;
+    const emojiEl = document.getElementById('pm-gallery-emoji');
+    const imgEl   = document.getElementById('pm-gallery-img');
+    const prevBtn = document.getElementById('pm-gnav-prev');
+    const nextBtn = document.getElementById('pm-gnav-next');
+    const dotsEl  = document.getElementById('pm-gdots');
+    const gallery = document.getElementById('pm-gallery');
+    if (!images.length) {
+      emojiEl.innerHTML = iconFor(p);
+      emojiEl.style.display = 'flex'; imgEl.style.display = 'none';
+      gallery.style.cursor = 'default'; gallery.classList.remove('has-image');
+      prevBtn.style.display = 'none'; nextBtn.style.display = 'none';
+      dotsEl.innerHTML = '';
+    } else {
+      emojiEl.style.display = 'none'; imgEl.style.display = 'block';
+      imgEl.src = images[0]; imgEl.alt = p.name;
+      gallery.style.cursor = 'zoom-in'; gallery.classList.add('has-image');
+      if (images.length > 1) {
+        prevBtn.style.display = 'flex'; nextBtn.style.display = 'flex';
+        dotsEl.innerHTML = images.map((_,i) =>
+          `<div class="gallery-dot${i===0?' active':''}" onclick="event.stopPropagation();setGallerySlide(${i})"></div>`
+        ).join('');
+      } else {
+        prevBtn.style.display = 'none'; nextBtn.style.display = 'none';
+        dotsEl.innerHTML = '';
+      }
+    }
+  }
+  function galleryNav(dir) {
+    const p = PRODUCTS.find(x => x.id === currentProductId);
+    if (!p) return;
+    const images = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
+    if (images.length <= 1) return;
+    setGallerySlide((currentGalleryIdx + dir + images.length) % images.length);
+  }
+  function setGallerySlide(idx) {
+    const p = PRODUCTS.find(x => x.id === currentProductId);
+    if (!p) return;
+    const images = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
+    currentGalleryIdx = idx;
+    const imgEl = document.getElementById('pm-gallery-img');
+    if (imgEl) imgEl.src = images[idx];
+    document.querySelectorAll('#pm-gdots .gallery-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+  }
+  function openLightboxCurrent() {
+    const p = PRODUCTS.find(x => x.id === currentProductId);
+    if (!p) return;
+    const images = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
+    if (images[currentGalleryIdx]) openLightbox(images[currentGalleryIdx], p.name);
+  }
+
+  // ---------- Categorías dinámicas ----------
+  const CAT_DISPLAY = ['proteinas','creatinas','preentreno','vitaminas','quemadores','recuperacion','volumen','accesorios'];
+  function renderCategories() {
+    const grid = document.getElementById('categories-grid');
+    if (!grid) return;
+    const catImgs = (SITE_CONFIG && SITE_CONFIG.category_images) || {};
+    const labels = { proteinas:'Proteínas', creatinas:'Creatinas', preentreno:'Pre-Entreno',
+      vitaminas:'Vitaminas', quemadores:'Quemadores', recuperacion:'Recuperación',
+      volumen:'Volumen', accesorios:'Accesorios' };
+    grid.innerHTML = CAT_DISPLAY.map(cat => {
+      const coverSrc = catImgs[cat];
+      if (coverSrc) {
+        return `<div class="category has-cover" onclick="filterCategory('${cat}')">
+          <img class="cat-cover-img" src="${coverSrc}" alt="${labels[cat]}">
+          <div class="category-label"><h3>${labels[cat]}</h3></div>
+        </div>`;
+      }
+      return `<div class="category" onclick="filterCategory('${cat}')">
+        <div class="category-icon">${ICONS[cat]||'&#128170;'}</div>
+        <h3>${labels[cat]}</h3>
+      </div>`;
+    }).join('');
+  }
+
+  // ---------- Portadas de categorías (admin) ----------
+  async function uploadCatCover(cat, input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 600 * 1024) {
+      toast('Imagen muy grande – usá una de menos de 600KB', 'error'); return;
+    }
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      if (!SITE_CONFIG.category_images) SITE_CONFIG.category_images = {};
+      SITE_CONFIG.category_images[cat] = e.target.result;
+      try { localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(SITE_CONFIG)); } catch(ex) {}
+      renderCategories();
+      renderCatCoversEditor();
+      if (getToken()) {
+        toast('Guardando…');
+        await pushSiteConfig('config: update category cover ' + cat);
+      } else {
+        toast('Portada guardada localmente (conectá GitHub para todos los dispositivos)', 'success');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+  function removeCatCover(cat) {
+    if (!SITE_CONFIG.category_images) return;
+    delete SITE_CONFIG.category_images[cat];
+    try { localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(SITE_CONFIG)); } catch(e) {}
+    renderCategories();
+    renderCatCoversEditor();
+    if (getToken()) pushSiteConfig('config: remove category cover ' + cat);
+  }
+  function renderCatCoversEditor() {
+    const el = document.getElementById('cat-covers-editor');
+    if (!el) return;
+    const catImgs = (SITE_CONFIG.category_images) || {};
+    const labels = { proteinas:'Proteínas', creatinas:'Creatinas', preentreno:'Pre-Entreno',
+      vitaminas:'Vitaminas', quemadores:'Quemadores', recuperacion:'Recuperación',
+      volumen:'Volumen', accesorios:'Accesorios' };
+    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">` +
+      CAT_DISPLAY.map(cat => `
+        <div style="text-align:center;">
+          <div style="height:90px;background:#111;border:1px solid #222;position:relative;overflow:hidden;cursor:pointer;" onclick="document.getElementById('catfile-${cat}').click()">
+            ${catImgs[cat]
+              ? `<img src="${catImgs[cat]}" style="width:100%;height:100%;object-fit:cover;opacity:0.75;">`
+              : `<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;">${ICONS[cat]||'?'}</div>`}
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);color:#fff;font-size:11px;font-weight:700;opacity:0;transition:opacity 0.15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">Cambiar foto</div>
+            <input type="file" id="catfile-${cat}" accept="image/*" style="display:none" onchange="uploadCatCover('${cat}',this)">
+          </div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-top:5px;color:#ccc;">${labels[cat]}</div>
+          ${catImgs[cat] ? `<button class="editor-btn" style="margin-top:3px;font-size:10px;padding:3px 8px;" onclick="removeCatCover('${cat}')">Quitar</button>` : ''}
+        </div>
+      `).join('') + '</div>';
+  }
+  async function pushSiteConfig(msg) {
+    if (!getToken()) return;
+    try {
+      const headers = { Authorization: 'Bearer ' + getToken(), 'Content-Type': 'application/json' };
+      let sha = null;
+      const chk = await fetch(GH_CONFIG_API + '?ref=main', { headers, cache: 'no-store' });
+      if (chk.ok) { const cd = await chk.json(); sha = cd.sha || null; }
+      const body = { message: msg || 'config: update', content: b64encode(JSON.stringify(SITE_CONFIG, null, 2)) };
+      if (sha) body.sha = sha;
+      const res = await fetch(GH_CONFIG_API, { method: 'PUT', headers, body: JSON.stringify(body) });
+      if (res.ok) toast('Guardado en GitHub ✓', 'success');
+      else toast('Error al subir a GitHub', 'error');
+    } catch(e) { toast('Error: ' + e.message, 'error'); }
   }
 
   function selectFlavor(flavor, el) {
@@ -3180,6 +3374,7 @@
       const sheetInput = document.getElementById('sheets-url-input');
       if (sheetInput) sheetInput.value = SITE_CONFIG.sheets_url || '';
       updateSheetStatus(SITE_CONFIG.sheets_url ? 'ok' : 'idle');
+      renderCatCoversEditor();
     } else {
       document.getElementById('pwd-error').textContent = 'Clave incorrecta';
       document.getElementById('pwd-input').value = '';
@@ -3460,10 +3655,22 @@
     if (!grid) return;
     grid.innerHTML = PRODUCTS.map(p => `
       <div class="editor-card">
-        <div class="editor-img" onclick="document.getElementById('file-${p.id}').click()">
-          ${imgFor(p)}
-          <div class="overlay">Cambiar<br>foto</div>
-          <input type="file" id="file-${p.id}" accept="image/*" style="display:none" onchange="handleImageUpload(${p.id}, this)">
+        <div>
+          <div class="editor-img" onclick="document.getElementById('file-${p.id}').click()">
+            ${imgFor(p)}
+            <div class="overlay">Portada</div>
+            <input type="file" id="file-${p.id}" accept="image/*" style="display:none" onchange="handleImageUpload(${p.id}, this)">
+          </div>
+          <div class="img-thumb-strip">
+            ${(p.images||[]).map((img,i)=>`
+              <div class="img-thumb">
+                <img src="${img}" alt="">
+                <button class="img-remove" onclick="removeProductImage(${p.id},${i})" title="${i===0?'Quitar portada':'Quitar foto'}">&times;</button>
+              </div>`).join('')}
+            <div class="img-thumb-add" onclick="document.getElementById('addph-${p.id}').click()" title="Agregar foto">+
+              <input type="file" id="addph-${p.id}" accept="image/*" style="display:none" onchange="addProductImage(${p.id},this)">
+            </div>
+          </div>
         </div>
         <div class="editor-fields">
           <input type="text" value="${esc(p.name)}" placeholder="Nombre" onchange="updateProduct(${p.id}, 'name', this.value)">
@@ -3514,34 +3721,47 @@
   }
 
   function handleImageUpload(id, input) {
+    // Reemplaza la portada (images[0])
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast('Imagen muy grande (máx 2MB)', 'error');
-      return;
-    }
+    if (file.size > 2 * 1024 * 1024) { toast('Imagen muy grande (máx 2MB)', 'error'); return; }
     const reader = new FileReader();
     reader.onload = (e) => {
       const p = PRODUCTS.find(x => x.id === id);
       if (!p) return;
-      p.image = e.target.result;
-      saveProducts();
-      renderProducts();
-      renderProductEditor();
-      toast('Foto actualizada', 'success');
+      if (!p.images) p.images = [];
+      p.images[0] = e.target.result;
+      p.image = p.images[0]; // backward compat
+      saveProducts(); renderProducts(); renderProductEditor();
+      toast('Portada actualizada', 'success');
     };
     reader.readAsDataURL(file);
   }
-
-  function removeImage(id) {
-    const p = PRODUCTS.find(x => x.id === id);
-    if (!p) return;
-    delete p.image;
-    saveProducts();
-    renderProducts();
-    renderProductEditor();
-    toast('Foto eliminada');
+  function addProductImage(id, input) {
+    // Agrega foto adicional al final
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast('Imagen muy grande (máx 2MB)', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const p = PRODUCTS.find(x => x.id === id);
+      if (!p) return;
+      if (!p.images) p.images = p.image ? [p.image] : [];
+      p.images.push(e.target.result);
+      p.image = p.images[0];
+      saveProducts(); renderProducts(); renderProductEditor();
+      toast('Foto añadida', 'success');
+    };
+    reader.readAsDataURL(file);
   }
+  function removeProductImage(id, idx) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p || !p.images) return;
+    p.images.splice(idx, 1);
+    p.image = p.images[0] || undefined;
+    saveProducts(); renderProducts(); renderProductEditor();
+  }
+  function removeImage(id) { removeProductImage(id, 0); toast('Foto eliminada'); }
 
   function deleteProduct(id) {
     const p = PRODUCTS.find(x => x.id === id);
