@@ -8,7 +8,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    background: #0a0a0a;
+    background: #141414;
     color: #f5f5f5;
     line-height: 1.5;
   }
@@ -428,8 +428,8 @@
     gap: 18px;
   }
   .product {
-    background: #161616;
-    border: 1px solid #222;
+    background: #1c1c1c;
+    border: 1px solid #2a2a2a;
     overflow: hidden;
     transition: all 0.25s;
     cursor: pointer;
@@ -440,7 +440,7 @@
   }
   .product-image {
     height: 180px;
-    background: linear-gradient(135deg, #222 0%, #0f0f0f 100%);
+    background: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -667,12 +667,13 @@
   .cart-item-img {
     width: 56px;
     height: 56px;
-    background: linear-gradient(135deg, #222, #0f0f0f);
+    background: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 28px;
     flex-shrink: 0;
+    overflow: hidden;
   }
   .cart-item-info { flex: 1; min-width: 0; }
   .cart-item-name {
@@ -740,12 +741,12 @@
     padding: 6px 24px;
   }
   .search-bar-inner {
-    max-width: 500px;
+    max-width: 560px;
     margin: 0 auto;
     display: flex;
     align-items: center;
-    background: #141414;
-    border: 1px solid #222;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
     padding: 2px 12px;
     gap: 8px;
     border-radius: 4px;
@@ -768,6 +769,30 @@
     font-family: inherit;
   }
   .search-bar input::placeholder { color: #666; }
+  .search-back-btn {
+    display: none;
+    background: none;
+    border: 1px solid #333;
+    color: #aaa;
+    padding: 4px 11px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+  .search-back-btn:hover { border-color: #0066ff; color: #0066ff; }
+
+  /* Search mode: oculta inicio, muestra solo resultados */
+  body.search-active .hero,
+  body.search-active #marcas,
+  body.search-active #categorias { display: none !important; }
+  body.search-active .search-back-btn { display: flex; align-items: center; gap: 5px; }
 
   /* Marcas carousel */
   #marcas { padding: 50px 24px 30px; }
@@ -918,7 +943,7 @@
   .product-modal-img {
     width: 220px;
     height: 220px;
-    background: linear-gradient(135deg, #222, #0f0f0f);
+    background: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1687,6 +1712,7 @@
     <div class="search-bar-inner">
       <span class="search-icon">&#128269;</span>
       <input type="text" id="search-input" placeholder="Buscar productos..." oninput="searchProducts(this.value)">
+      <button class="search-back-btn" onclick="goHome()" title="Volver al inicio">&#8592; Inicio</button>
     </div>
   </div>
   <div class="filter-bar" id="filter-bar">
@@ -2153,7 +2179,7 @@
   }
   function iconFor(p) { return ICONS[p.category] || '&#128170;'; }
   function imgFor(p) {
-    if (p.image) return `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`;
+    if (p.image) return `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;background:#fff;">`;
     return `<span style="font-size:inherit;">${iconFor(p)}</span>`;
   }
 
@@ -2438,6 +2464,7 @@
         </div>
       </div>
     `).join('');
+    if (typeof applyVisibility === 'function') applyVisibility();
   }
 
   // ---------- Toast ----------
@@ -2564,34 +2591,76 @@
       searchProducts('');
     }
   }
-  function searchProducts(q) {
-    const query = q.trim().toLowerCase();
-    document.querySelectorAll('.product').forEach(p => {
-      const name = p.dataset.name.toLowerCase();
-      p.style.display = (!query || name.includes(query)) ? '' : 'none';
+  // ---------- Búsqueda + filtros combinados ----------
+  let activeFilter = null; // { type: 'category'|'brand', value: '...' }
+  const CAT_LABELS_FULL = {
+    proteinas: 'Proteínas',
+    creatinas: 'Creatinas',
+    preentreno: 'Pre-Entreno',
+    vitaminas: 'Vitaminas',
+    quemadores: 'Quemadores',
+    recuperacion: 'Recuperación',
+    volumen: 'Volumen',
+    accesorios: 'Accesorios',
+    combos: 'Combos'
+  };
+
+  function normalizeText(s) {
+    return String(s || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, ''); // quita acentos
+  }
+
+  function applyVisibility() {
+    const queryRaw = (document.getElementById('search-input')?.value || '').trim();
+    const query = normalizeText(queryRaw);
+    let visibleCount = 0;
+    document.querySelectorAll('.product').forEach(card => {
+      const id = parseInt(card.dataset.id);
+      const p = PRODUCTS.find(x => x.id === id);
+      if (!p) { card.style.display = 'none'; return; }
+
+      // Filtro activo (categoría o marca)
+      let passesFilter = true;
+      if (activeFilter) {
+        if (activeFilter.type === 'category') passesFilter = p.category === activeFilter.value;
+        else if (activeFilter.type === 'brand') passesFilter = p.brand === activeFilter.value;
+      }
+
+      // Búsqueda multi-campo
+      let passesSearch = true;
+      if (query) {
+        const haystack = normalizeText([
+          p.name, p.brand, p.shortdesc, p.desc, p.size,
+          CAT_LABELS_FULL[p.category] || p.category
+        ].join(' '));
+        passesSearch = haystack.includes(query);
+      }
+
+      const show = passesFilter && passesSearch;
+      card.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
     });
+    // Mensaje "sin resultados"
+    const empty = document.getElementById('no-results');
+    if (empty) empty.style.display = (visibleCount === 0 && (query || activeFilter)) ? 'block' : 'none';
+  }
+
+  function searchProducts(q) {
+    const hasQuery = q.trim().length > 0;
+    document.body.classList.toggle('search-active', hasQuery);
+    applyVisibility();
+    if (hasQuery) scrollToProducts();
   }
 
   // ---------- Category filter ----------
   function filterCategory(cat) {
-    const labels = {
-      proteinas: 'Proteínas',
-      creatinas: 'Creatinas',
-      preentreno: 'Pre-Entreno',
-      vitaminas: 'Vitaminas',
-      quemadores: 'Quemadores',
-      recuperacion: 'Recuperación',
-      volumen: 'Volumen',
-      accesorios: 'Accesorios',
-      combos: 'Combos'
-    };
-    document.querySelectorAll('.product').forEach(p => {
-      const cats = (p.dataset.category || '').split(' ');
-      p.style.display = cats.includes(cat) ? '' : 'none';
-    });
+    activeFilter = { type: 'category', value: cat };
     const bar = document.getElementById('filter-bar');
-    document.getElementById('filter-label').textContent = 'Filtrando por: ' + (labels[cat] || cat);
+    document.getElementById('filter-label').textContent = 'Filtrando por: ' + (CAT_LABELS_FULL[cat] || cat);
     bar.classList.add('active');
+    applyVisibility();
     scrollToProducts();
   }
   function renderMarcas() {
@@ -2615,13 +2684,10 @@
   }
 
   function filterBrand(brand) {
-    document.querySelectorAll('.product').forEach(card => {
-      const id = parseInt(card.dataset.id);
-      const p = PRODUCTS.find(x => x.id === id);
-      card.style.display = (p && p.brand === brand) ? '' : 'none';
-    });
+    activeFilter = { type: 'brand', value: brand };
     document.getElementById('filter-label').textContent = 'Filtrando por marca: ' + brand;
     document.getElementById('filter-bar').classList.add('active');
+    applyVisibility();
     scrollToProducts();
     closeMenu();
   }
@@ -2659,17 +2725,17 @@
   }
 
   function clearFilter() {
-    document.querySelectorAll('.product').forEach(p => p.style.display = '');
+    activeFilter = null;
     document.getElementById('filter-bar').classList.remove('active');
+    applyVisibility();
   }
   function goHome() {
-    // Limpiar filtro y búsqueda
-    document.querySelectorAll('.product').forEach(p => p.style.display = '');
+    activeFilter = null;
     document.getElementById('filter-bar').classList.remove('active');
-    const searchBar = document.getElementById('search-bar');
-    if (searchBar.classList.contains('active')) searchBar.classList.remove('active');
     const searchInput = document.getElementById('search-input');
     if (searchInput) searchInput.value = '';
+    document.body.classList.remove('search-active');
+    applyVisibility();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
