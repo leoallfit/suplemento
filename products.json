@@ -4,7 +4,6 @@
     "name": "Proteína Hoch",
     "brand": "Hoch",
     "price": 50000,
-    "size": "1kg",
     "shortdesc": "Whey de alta calidad · 25g proteína",
     "flavors": [
       "Chocolate",
@@ -13,11 +12,26 @@
       "Dulce de leche"
     ],
     "nutrition": [
-      ["Proteínas", "25g"],
-      ["Carbohidratos", "3g"],
-      ["Grasas", "1.5g"],
-      ["Calorías", "125kcal"],
-      ["Porciones", "30"]
+      [
+        "Proteínas",
+        "25g"
+      ],
+      [
+        "Carbohidratos",
+        "3g"
+      ],
+      [
+        "Grasas",
+        "1.5g"
+      ],
+      [
+        "Calorías",
+        "125kcal"
+      ],
+      [
+        "Porciones",
+        "30"
+      ]
     ],
     "desc": "¡Maximizá tu potencial con la proteína de suero más pura! Whey Protein Hoch Sport es una proteína de máxima calidad, 100% instantánea, diseñada para quienes buscan potenciar el crecimiento y la recuperación muscular tras cada entrenamiento.\n\nBeneficios clave\n\nEstimula el desarrollo de masa muscular magra\nFavorece la recuperación rápida post-entrenamiento\nDisolución instantánea para una preparación práctica y sin grumos\n \n\n¿Cómo consumirlo?\n\nMezclá 1 scoop en 200 ml de agua y disfrutá de una bebida proteica deliciosa y efectiva.",
     "category": "proteinas"
@@ -27,14 +41,25 @@
     "name": "Multivitamínico Star",
     "brand": "Star Nutrition",
     "price": 21000,
-    "size": "60 caps",
     "shortdesc": "Vitaminas y minerales esenciales",
     "flavors": [],
     "nutrition": [
-      ["Vitamina C", "1000mg"],
-      ["Vitamina D", "1000UI"],
-      ["Zinc", "10mg"],
-      ["Hierro", "18mg"]
+      [
+        "Vitamina C",
+        "1000mg"
+      ],
+      [
+        "Vitamina D",
+        "1000UI"
+      ],
+      [
+        "Zinc",
+        "10mg"
+      ],
+      [
+        "Hierro",
+        "18mg"
+      ]
     ],
     "desc": "Cubre los requerimientos diarios de micronutrientes para rendimiento óptimo.",
     "category": "vitaminas"
@@ -44,7 +69,6 @@
     "name": "Proteína Núcleo",
     "brand": "Núcleo",
     "price": 32100,
-    "size": "1kg",
     "shortdesc": "Whey con excelente perfil aminoacídico",
     "flavors": [
       "Chocolate",
@@ -52,11 +76,26 @@
       "Cookies"
     ],
     "nutrition": [
-      ["Proteínas", "24g"],
-      ["Carbohidratos", "4g"],
-      ["Grasas", "2g"],
-      ["Calorías", "130kcal"],
-      ["Porciones", "28"]
+      [
+        "Proteínas",
+        "24g"
+      ],
+      [
+        "Carbohidratos",
+        "4g"
+      ],
+      [
+        "Grasas",
+        "2g"
+      ],
+      [
+        "Calorías",
+        "130kcal"
+      ],
+      [
+        "Porciones",
+        "28"
+      ]
     ],
     "desc": "Alta biodisponibilidad. Ideal para síntesis muscular y recuperación.",
     "category": "proteinas"
@@ -66,7 +105,6 @@
     "name": "Pre-Entreno V8",
     "brand": "Star Nutrition",
     "price": 30300,
-    "size": "300g",
     "shortdesc": "Energía foco y bomba muscular",
     "flavors": [
       "Sandía",
@@ -75,10 +113,22 @@
       "Frutos rojos"
     ],
     "nutrition": [
-      ["Cafeína", "200mg"],
-      ["Beta-Alanina", "3.2g"],
-      ["Creatina", "2g"],
-      ["Citrulina", "4g"]
+      [
+        "Cafeína",
+        "200mg"
+      ],
+      [
+        "Beta-Alanina",
+        "3.2g"
+      ],
+      [
+        "Creatina",
+        "2g"
+      ],
+      [
+        "Citrulina",
+        "4g"
+      ]
     ],
     "desc": "Fórmula de alto rendimiento para entrenamientos intensos. Activa a los 20 min.",
     "category": "preentreno"
@@ -88,15 +138,20 @@
     "name": "Creatina Star",
     "brand": "Star Nutrition",
     "price": 23600,
-    "size": "300g",
     "shortdesc": "Creatina monohidrato pura · 60 porciones",
     "flavors": [
       "Sin sabor",
       "Limón"
     ],
     "nutrition": [
-      ["Creatina monohidrato", "5g"],
-      ["Porciones", "60"]
+      [
+        "Creatina monohidrato",
+        "5g"
+      ],
+      [
+        "Porciones",
+        "60"
+      ]
     ],
     "desc": "Aumenta fuerza potencia y recuperación. La más estudiada del mercado.",
     "category": "creatinas",
@@ -107,16 +162,24 @@
     "name": "Thermogenix",
     "brand": "Star Nutrition",
     "price": 26700,
-    "size": "60 caps",
     "shortdesc": "Quemador para pérdida de grasa",
     "flavors": [
       "Tropical",
       "Limón"
     ],
     "nutrition": [
-      ["Cafeína", "200mg"],
-      ["L-Carnitina", "500mg"],
-      ["Té verde", "300mg"]
+      [
+        "Cafeína",
+        "200mg"
+      ],
+      [
+        "L-Carnitina",
+        "500mg"
+      ],
+      [
+        "Té verde",
+        "300mg"
+      ]
     ],
     "desc": "Acelera el metabolismo y potencia la oxidación de grasas como fuente de energía.",
     "category": "quemadores"
@@ -126,7 +189,6 @@
     "name": "Proteína Star",
     "brand": "Star Nutrition",
     "price": 45990,
-    "size": "1kg",
     "shortdesc": "Whey concentrada con excelente sabor",
     "flavors": [
       "Chocolate",
@@ -135,11 +197,26 @@
       "Banana"
     ],
     "nutrition": [
-      ["Proteínas", "24g"],
-      ["Carbohidratos", "5g"],
-      ["Grasas", "2g"],
-      ["Calorías", "135kcal"],
-      ["Porciones", "30"]
+      [
+        "Proteínas",
+        "24g"
+      ],
+      [
+        "Carbohidratos",
+        "5g"
+      ],
+      [
+        "Grasas",
+        "2g"
+      ],
+      [
+        "Calorías",
+        "135kcal"
+      ],
+      [
+        "Porciones",
+        "30"
+      ]
     ],
     "desc": "Proteína de alta calidad. Ideal para ganancia muscular y recuperación.",
     "category": "proteinas"
@@ -148,15 +225,20 @@
     "id": 8,
     "name": "Creatina Hoch",
     "brand": "Hoch",
-    "price": 27500,
-    "size": "300g",
+    "price": 37550,
     "shortdesc": "Creatina micronizada de máxima pureza",
     "flavors": [
       "Sin sabor"
     ],
     "nutrition": [
-      ["Creatina micronizada", "5g"],
-      ["Porciones", "60"]
+      [
+        "Creatina micronizada",
+        "5g"
+      ],
+      [
+        "Porciones",
+        "60"
+      ]
     ],
     "desc": "Micronizada para mayor absorción. Aumenta rendimiento en ejercicio de alta intensidad.",
     "category": "creatinas"
@@ -166,7 +248,6 @@
     "name": "Pre-Entreno V8",
     "brand": "Núcleo",
     "price": 28300,
-    "size": "300g",
     "shortdesc": "Energía y bomba muscular Núcleo",
     "flavors": [
       "Sandía",
@@ -174,9 +255,18 @@
       "Tropical"
     ],
     "nutrition": [
-      ["Cafeína", "180mg"],
-      ["Beta-Alanina", "3g"],
-      ["Citrulina", "4g"]
+      [
+        "Cafeína",
+        "180mg"
+      ],
+      [
+        "Beta-Alanina",
+        "3g"
+      ],
+      [
+        "Citrulina",
+        "4g"
+      ]
     ],
     "desc": "Pre-entreno completo para máximo rendimiento y concentración.",
     "category": "preentreno"
@@ -186,15 +276,20 @@
     "name": "Creatina Núcleo Fit",
     "brand": "Núcleo",
     "price": 20500,
-    "size": "120g",
     "shortdesc": "Creatina práctica para el día a día",
     "flavors": [
       "Sin sabor",
       "Limón"
     ],
     "nutrition": [
-      ["Creatina", "3g"],
-      ["Porciones", "40"]
+      [
+        "Creatina",
+        "3g"
+      ],
+      [
+        "Porciones",
+        "40"
+      ]
     ],
     "desc": "Opción accesible y efectiva para mejorar fuerza y resistencia muscular.",
     "category": "creatinas"
@@ -204,7 +299,6 @@
     "name": "Colágeno Star",
     "brand": "Star Nutrition",
     "price": 20900,
-    "size": "300g",
     "shortdesc": "Colágeno hidrolizado · articulaciones y piel",
     "flavors": [
       "Naranja",
@@ -212,9 +306,18 @@
       "Sin sabor"
     ],
     "nutrition": [
-      ["Colágeno hidrolizado", "10g"],
-      ["Vitamina C", "60mg"],
-      ["Porciones", "30"]
+      [
+        "Colágeno hidrolizado",
+        "10g"
+      ],
+      [
+        "Vitamina C",
+        "60mg"
+      ],
+      [
+        "Porciones",
+        "30"
+      ]
     ],
     "desc": "Refuerza tejidos conectivos cartílagos y mejora la salud de la piel.",
     "category": "recuperacion"
@@ -224,7 +327,6 @@
     "name": "Ganador de Peso",
     "brand": "Star Nutrition",
     "price": 28100,
-    "size": "3kg",
     "shortdesc": "Hipercalórico para ganar masa y peso",
     "flavors": [
       "Chocolate",
@@ -232,11 +334,26 @@
       "Frutilla"
     ],
     "nutrition": [
-      ["Proteínas", "30g"],
-      ["Carbohidratos", "55g"],
-      ["Grasas", "3g"],
-      ["Calorías", "370kcal"],
-      ["Porciones", "15"]
+      [
+        "Proteínas",
+        "30g"
+      ],
+      [
+        "Carbohidratos",
+        "55g"
+      ],
+      [
+        "Grasas",
+        "3g"
+      ],
+      [
+        "Calorías",
+        "370kcal"
+      ],
+      [
+        "Porciones",
+        "15"
+      ]
     ],
     "desc": "Ideal para personas con dificultad para subir de peso o en etapa de volumen.",
     "category": "volumen"
@@ -246,13 +363,21 @@
     "name": "Shaker Everlast",
     "brand": "Everlast",
     "price": 12900,
-    "size": "700ml",
     "shortdesc": "700ml · compartimiento · libre de BPA",
     "flavors": [],
     "nutrition": [
-      ["Capacidad", "700ml"],
-      ["Material", "Libre de BPA"],
-      ["Compartimiento", "Incluye"]
+      [
+        "Capacidad",
+        "700ml"
+      ],
+      [
+        "Material",
+        "Libre de BPA"
+      ],
+      [
+        "Compartimiento",
+        "Incluye"
+      ]
     ],
     "desc": "Shaker resistente con compartimiento para guardar suplementos o snacks.",
     "category": "accesorios"
@@ -262,7 +387,6 @@
     "name": "Colágeno Núcleo Fit",
     "brand": "Núcleo",
     "price": 22650,
-    "size": "300g",
     "shortdesc": "Colágeno para articulaciones y piel",
     "flavors": [
       "Naranja",
@@ -270,9 +394,18 @@
       "Sin sabor"
     ],
     "nutrition": [
-      ["Colágeno", "10g"],
-      ["Vitamina C", "50mg"],
-      ["Porciones", "30"]
+      [
+        "Colágeno",
+        "10g"
+      ],
+      [
+        "Vitamina C",
+        "50mg"
+      ],
+      [
+        "Porciones",
+        "30"
+      ]
     ],
     "desc": "Fórmula para recuperación articular y cuidado de piel y tejidos.",
     "category": "recuperacion"
@@ -282,12 +415,17 @@
     "name": "Citrato Magnesio Caps",
     "brand": "Star Nutrition",
     "price": 17250,
-    "size": "60 caps",
     "shortdesc": "Magnesio en cápsulas · 60 porciones",
     "flavors": [],
     "nutrition": [
-      ["Magnesio", "300mg"],
-      ["Porciones", "60"]
+      [
+        "Magnesio",
+        "300mg"
+      ],
+      [
+        "Porciones",
+        "60"
+      ]
     ],
     "desc": "Mejora calidad del sueño reduce calambres y apoya la función muscular.",
     "category": "recuperacion"
@@ -297,15 +435,20 @@
     "name": "Citrato Magnesio Polvo",
     "brand": "Star Nutrition",
     "price": 26990,
-    "size": "300g",
     "shortdesc": "Magnesio en polvo de alta absorción",
     "flavors": [
       "Sin sabor",
       "Limón"
     ],
     "nutrition": [
-      ["Magnesio", "350mg"],
-      ["Porciones", "30"]
+      [
+        "Magnesio",
+        "350mg"
+      ],
+      [
+        "Porciones",
+        "30"
+      ]
     ],
     "desc": "Máxima absorción. Ideal para recuperación nocturna y calidad del sueño.",
     "category": "recuperacion"
@@ -315,13 +458,21 @@
     "name": "Omega 3",
     "brand": "Star Nutrition",
     "price": 28900,
-    "size": "60 caps",
     "shortdesc": "EPA + DHA · corazón y cerebro",
     "flavors": [],
     "nutrition": [
-      ["EPA", "360mg"],
-      ["DHA", "240mg"],
-      ["Porciones", "60"]
+      [
+        "EPA",
+        "360mg"
+      ],
+      [
+        "DHA",
+        "240mg"
+      ],
+      [
+        "Porciones",
+        "60"
+      ]
     ],
     "desc": "Reduce inflamación mejora salud cardiovascular y función cognitiva.",
     "category": "recuperacion"
