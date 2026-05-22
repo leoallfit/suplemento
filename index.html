@@ -251,6 +251,49 @@
     margin-top: 20px;
     margin-bottom: 4px;
   }
+
+  /* Accordion (desplegable) */
+  .accordion {
+    margin-top: 20px;
+    border: 1px solid #1f1f1f;
+    background: #0a0a0a;
+  }
+  .accordion-head {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: inherit;
+  }
+  .accordion-head:hover { background: #111; }
+  .accordion-arrow {
+    color: #0066ff;
+    transition: transform 0.25s;
+    font-size: 14px;
+  }
+  .accordion.open .accordion-arrow { transform: rotate(180deg); }
+  .accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 16px;
+    color: #bbb;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .accordion.open .accordion-body {
+    max-height: 600px;
+    padding: 0 16px 16px 16px;
+  }
   .category {
     background: #161616;
     border: 1px solid #222;
@@ -1416,8 +1459,15 @@
         <div class="brand" id="pm-brand">Fit</div>
         <h3 id="pm-name"></h3>
         <div class="price" id="pm-price"></div>
-        <p class="desc" id="pm-desc"></p>
+        <p class="shortdesc" id="pm-shortdesc" style="color:#aaa; font-size:14px; margin-top:4px;"></p>
       </div>
+    </div>
+    <div id="pm-desc-wrap" class="accordion" style="display:none;">
+      <button class="accordion-head" onclick="toggleAccordion('pm-desc-wrap')" type="button">
+        <span>Descripción</span>
+        <span class="accordion-arrow">&#9662;</span>
+      </button>
+      <div class="accordion-body" id="pm-desc"></div>
     </div>
     <div id="pm-flavors-wrap" style="display:none;">
       <div class="modal-section-label">Sabores</div>
@@ -1953,7 +2003,16 @@
     document.getElementById('pm-brand').textContent = p.brand;
     document.getElementById('pm-name').textContent = p.name;
     document.getElementById('pm-price').textContent = formatPrice(p.price);
-    document.getElementById('pm-desc').textContent = p.desc || '';
+    document.getElementById('pm-shortdesc').textContent = p.shortdesc || '';
+    // Descripción larga (desplegable)
+    const descWrap = document.getElementById('pm-desc-wrap');
+    descWrap.classList.remove('open'); // siempre cerrado al abrir
+    if (p.desc && p.desc.trim()) {
+      document.getElementById('pm-desc').textContent = p.desc;
+      descWrap.style.display = 'block';
+    } else {
+      descWrap.style.display = 'none';
+    }
 
     const flavorsWrap = document.getElementById('pm-flavors-wrap');
     const flavorsEl = document.getElementById('pm-flavors');
@@ -1974,6 +2033,11 @@
     }
 
     document.getElementById('product-modal').classList.add('active');
+  }
+
+  function toggleAccordion(wrapId) {
+    const el = document.getElementById(wrapId);
+    if (el) el.classList.toggle('open');
   }
 
   function selectFlavor(flavor, el) {
@@ -2194,6 +2258,7 @@
             <input type="number" value="${p.price}" placeholder="Precio" onchange="updateProduct(${p.id}, 'price', parseFloat(this.value)||0)">
           </div>
           <input type="text" value="${esc(p.shortdesc)}" placeholder="Descripción corta" onchange="updateProduct(${p.id}, 'shortdesc', this.value)">
+          <textarea rows="3" placeholder="Descripción larga (se muestra en el desplegable)" onchange="updateProduct(${p.id}, 'desc', this.value)" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;padding:7px 10px;font-size:13px;font-family:inherit;outline:none;width:100%;resize:vertical;">${esc(p.desc)}</textarea>
           <select onchange="updateProduct(${p.id}, 'category', this.value)">
             ${CATEGORIES.map(c => `<option value="${c}" ${c === p.category ? 'selected' : ''}>${CAT_LABELS[c]}</option>`).join('')}
           </select>
