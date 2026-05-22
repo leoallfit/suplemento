@@ -1294,6 +1294,73 @@
   .editor-btn:hover { border-color: #0066ff; color: #0066ff; }
   .editor-btn.danger:hover { border-color: #ff4757; color: #ff4757; }
 
+  /* Brand logos editor */
+  .brands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .brand-edit-card {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    padding: 14px;
+    text-align: center;
+  }
+  .brand-edit-img {
+    width: 100%;
+    height: 110px;
+    background: #fff;
+    border-radius: 50%;
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px dashed #2a2a2a;
+    overflow: hidden;
+    padding: 12px;
+    position: relative;
+    transition: border-color 0.15s;
+  }
+  .brand-edit-img:hover { border-color: #0066ff; }
+  .brand-edit-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .brand-edit-img .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-size: 10px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    border-radius: 50%;
+  }
+  .brand-edit-img:hover .overlay { opacity: 1; }
+  .brand-edit-img .text-fallback {
+    font-weight: 900;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #0a0a0a;
+    line-height: 1.15;
+  }
+  .brand-edit-name {
+    font-size: 12px;
+    color: #ccc;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .brand-edit-actions { display: flex; gap: 6px; }
+  .brand-edit-actions .editor-btn { flex: 1; }
+
   /* Responsive */
   @media (max-width: 900px) {
     .hero h1 { font-size: 44px; }
@@ -1786,6 +1853,16 @@
       <div class="editor-grid" id="editor-grid"></div>
     </div>
 
+    <div class="admin-section" style="padding:24px;">
+      <div class="editor-toolbar">
+        <h2>Logos de Marcas</h2>
+      </div>
+      <p style="color:#888;font-size:13px;margin-bottom:14px;">
+        Subí una imagen para cada marca. Aparecerá en el carrusel de la home.
+      </p>
+      <div class="brands-grid" id="brands-editor"></div>
+    </div>
+
   </div>
 </div>
 
@@ -1839,6 +1916,77 @@
   const GH_REPO = 'suplemento';
   const GH_PATH = 'products.json';
   const GH_API_BASE = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`;
+  const GH_BRANDS_PATH = 'brands.json';
+  const GH_BRANDS_API = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_BRANDS_PATH}`;
+  const BRANDS_STORAGE_KEY = 'puresupp_brands_v1';
+  let BRAND_LOGOS = {};
+
+  function saveBrandsLocal() {
+    try { localStorage.setItem(BRANDS_STORAGE_KEY, JSON.stringify(BRAND_LOGOS)); } catch(e) {}
+  }
+  function loadBrandsLocal() {
+    try {
+      const raw = localStorage.getItem(BRANDS_STORAGE_KEY);
+      if (raw) BRAND_LOGOS = JSON.parse(raw) || {};
+    } catch(e) {}
+  }
+  async function fetchRemoteBrands() {
+    try {
+      const res = await fetch('brands.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data && typeof data === 'object') {
+        BRAND_LOGOS = data;
+        saveBrandsLocal();
+        return true;
+      }
+    } catch(e) {
+      console.warn('No se pudo cargar brands.json:', e);
+    }
+    return false;
+  }
+  async function pushBrandsToGitHub(commitMsg) {
+    const token = getToken();
+    if (!token) { toast('Conectá GitHub primero', 'error'); return false; }
+    setSyncStatus('syncing');
+    let sha = null;
+    try {
+      const res = await fetch(GH_BRANDS_API + '?ref=main', { headers: { Authorization: 'Bearer ' + token } });
+      if (res.ok) { const d = await res.json(); sha = d.sha; }
+    } catch(e) {}
+    try {
+      const content = JSON.stringify(BRAND_LOGOS, null, 2) + '\n';
+      const body = {
+        message: commitMsg || 'Update brands',
+        content: b64encode(content),
+        branch: 'main'
+      };
+      if (sha) body.sha = sha;
+      const res = await fetch(GH_BRANDS_API, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'HTTP ' + res.status);
+      }
+      setSyncStatus('synced');
+      return true;
+    } catch(e) {
+      console.error('Push brands falló:', e);
+      setSyncStatus('error');
+      showGhError('Error al subir logos: ' + e.message);
+      return false;
+    }
+  }
+  let brandsSyncTimer = null;
+  function saveBrands() {
+    saveBrandsLocal();
+    if (!getToken()) return;
+    if (brandsSyncTimer) clearTimeout(brandsSyncTimer);
+    brandsSyncTimer = setTimeout(() => pushBrandsToGitHub('Update brand logos'), 1200);
+  }
 
   function saveLocal() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(PRODUCTS)); } catch(e) {}
@@ -2015,8 +2163,12 @@
 
   // On boot: try fetch remote, fallback to local cache
   (async function bootProducts() {
-    const remoteOk = await fetchRemoteProducts();
+    const [remoteOk, brandsOk] = await Promise.all([
+      fetchRemoteProducts(),
+      fetchRemoteBrands()
+    ]);
     if (!remoteOk) loadLocal();
+    if (!brandsOk) loadBrandsLocal();
     if (typeof renderProducts === 'function') renderProducts();
     if (typeof renderMarcas === 'function') renderMarcas();
   })();
@@ -2197,9 +2349,14 @@
     const el = document.getElementById('marcas-carousel');
     if (!el) return;
     const brands = [...new Set(PRODUCTS.map(p => p.brand).filter(Boolean))].sort();
-    el.innerHTML = brands.map(b => `
-      <div class="marca-circle" onclick="filterBrand('${b.replace(/'/g, "\\'")}')" title="${b}">${b}</div>
-    `).join('');
+    el.innerHTML = brands.map(b => {
+      const logo = BRAND_LOGOS[b];
+      const safe = b.replace(/'/g, "\\'");
+      const content = logo
+        ? `<img src="${logo}" alt="${b}">`
+        : b;
+      return `<div class="marca-circle" onclick="filterBrand('${safe}')" title="${b}">${content}</div>`;
+    }).join('');
   }
 
   function scrollMarcas(dir) {
@@ -2428,6 +2585,7 @@
       document.getElementById('admin-panel').classList.add('active');
       document.body.style.overflow = 'hidden';
       renderProductEditor();
+      renderBrandsEditor();
       updateTokenUI();
     } else {
       document.getElementById('pwd-error').textContent = 'Clave incorrecta';
@@ -2527,6 +2685,64 @@
     document.getElementById('info-modal').classList.add('active');
   }
 
+  function renderBrandsEditor() {
+    const el = document.getElementById('brands-editor');
+    if (!el) return;
+    const brands = [...new Set(PRODUCTS.map(p => p.brand).filter(Boolean))].sort();
+    if (brands.length === 0) {
+      el.innerHTML = '<p style="color:#666;font-size:13px;">No hay marcas. Agregá productos con marca en el editor de arriba.</p>';
+      return;
+    }
+    el.innerHTML = brands.map(b => {
+      const safeId = b.replace(/[^a-zA-Z0-9]/g, '_');
+      const logo = BRAND_LOGOS[b];
+      const safe = b.replace(/'/g, "\\'");
+      const imgContent = logo
+        ? `<img src="${logo}" alt="${esc(b)}">`
+        : `<div class="text-fallback">${esc(b)}</div>`;
+      return `
+        <div class="brand-edit-card">
+          <div class="brand-edit-img" onclick="document.getElementById('brand-file-${safeId}').click()">
+            ${imgContent}
+            <div class="overlay">Subir<br>logo</div>
+            <input type="file" id="brand-file-${safeId}" accept="image/*" style="display:none" onchange="handleBrandLogoUpload('${safe}', this)">
+          </div>
+          <div class="brand-edit-name">${esc(b)}</div>
+          <div class="brand-edit-actions">
+            ${logo ? `<button class="editor-btn danger" onclick="removeBrandLogo('${safe}')">Quitar</button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function handleBrandLogoUpload(brand, input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 1 * 1024 * 1024) {
+      toast('Imagen muy grande (máx 1MB)', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      BRAND_LOGOS[brand] = e.target.result;
+      saveBrands();
+      renderMarcas();
+      renderBrandsEditor();
+      toast('Logo de ' + brand + ' actualizado', 'success');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeBrandLogo(brand) {
+    if (!confirm('¿Quitar logo de "' + brand + '"?')) return;
+    delete BRAND_LOGOS[brand];
+    saveBrands();
+    renderMarcas();
+    renderBrandsEditor();
+    toast('Logo eliminado');
+  }
+
   function renderProductEditor() {
     const grid = document.getElementById('editor-grid');
     if (!grid) return;
@@ -2563,7 +2779,10 @@
     p[field] = value;
     saveProducts();
     renderProducts();
-    if (field === 'brand') renderMarcas();
+    if (field === 'brand') {
+      renderMarcas();
+      renderBrandsEditor();
+    }
     toast('Cambios guardados', 'success');
   }
 
