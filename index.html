@@ -2003,6 +2003,10 @@
       </button>
       <div class="accordion-body" id="pm-desc"></div>
     </div>
+    <div id="pm-sizes-wrap" style="display:none;">
+      <div class="modal-section-label">Presentaci&#243;n</div>
+      <div class="flavors" id="pm-sizes"></div>
+    </div>
     <div id="pm-flavors-wrap" style="display:none;">
       <div class="modal-section-label">Sabores</div>
       <div class="flavors" id="pm-flavors"></div>
@@ -2444,6 +2448,8 @@
     ]);
     if (!remoteOk) loadLocal();
     if (!brandsOk) loadBrandsLocal();
+    // Migrar campo legacy size (string) → sizes (array)
+    PRODUCTS.forEach(p => { if (!p.sizes) p.sizes = p.size ? [p.size] : []; });
     if (typeof renderProducts === 'function') renderProducts();
     if (typeof renderMarcas === 'function') renderMarcas();
   })();
@@ -2452,7 +2458,10 @@
     const grid = document.getElementById('products-grid');
     grid.innerHTML = PRODUCTS.map(p => `
       <div class="product" data-id="${p.id}" data-category="${p.category}" data-name="${p.name}" onclick="openProduct(${p.id})">
-        <div class="product-image" style="${p.image ? 'padding:0;overflow:hidden;' : ''}">${imgFor(p)}${p.size ? `<span class="product-size">${esc(p.size)}</span>` : ''}</div>
+        <div class="product-image" style="${p.image ? 'padding:0;overflow:hidden;' : ''}">
+          ${imgFor(p)}
+          ${(()=>{ const sz=p.sizes&&p.sizes.length?p.sizes:p.size?[p.size]:[]; return sz.length?`<span class="product-size">${esc(sz[0])}${sz.length>1?' +':''}</span>`:''; })()}
+        </div>
         <div class="product-info">
           <div class="product-brand">${p.brand}</div>
           <div class="product-name">${p.name}</div>
@@ -2486,32 +2495,37 @@
   const WHATSAPP_NUMBER = '5493515146361'; // Cambiar acá para apuntar a otro número (sin + ni espacios)
   const cart = [];
 
-  function lineKeyOf(id, flavor) { return id + '|' + (flavor || ''); }
+  function lineKeyOf(id, flavor, size) { return id + '|' + (flavor || '') + '|' + (size || ''); }
 
   function quickAdd(id) {
     const p = PRODUCTS.find(x => x.id === id);
     if (!p) return;
-    if (p.flavors && p.flavors.length > 1) {
-      // Tiene más de un sabor: abrir modal para que elija
+    const needsFlavor = p.flavors && p.flavors.length > 1;
+    const needsSize = p.sizes && p.sizes.length > 1;
+    if (needsFlavor || needsSize) {
       openProduct(id);
-      toast('Elegí un sabor', 'success');
+      if (needsFlavor && needsSize) toast('Elegi&#769; sabor y presentaci&#243;n', 'success');
+      else if (needsFlavor) toast('Elegi&#769; un sabor', 'success');
+      else toast('Elegi&#769; una presentaci&#243;n', 'success');
       return;
     }
-    // Sin sabores o solo uno: agregar directo
     const flavor = (p.flavors && p.flavors.length === 1) ? p.flavors[0] : null;
-    addProductToCart(id, flavor);
+    const pSz = p.sizes && p.sizes.length ? p.sizes : (p.size ? [p.size] : []);
+    const size = pSz.length ? pSz[0] : null;
+    addProductToCart(id, flavor, size);
   }
 
-  function addProductToCart(id, flavor) {
+  function addProductToCart(id, flavor, size) {
     const p = PRODUCTS.find(x => x.id === id);
     if (!p) return;
-    const key = lineKeyOf(id, flavor);
+    const key = lineKeyOf(id, flavor, size);
     const existing = cart.find(i => i.key === key);
     if (existing) existing.qty++;
-    else cart.push({ key, id: p.id, name: p.name, flavor: flavor || null, price: p.price, icon: imgFor(p), qty: 1 });
+    else cart.push({ key, id: p.id, name: p.name, flavor: flavor || null, size: size || null, price: p.price, icon: imgFor(p), qty: 1 });
     refreshCart();
-    const label = flavor ? `${p.name} (${flavor})` : p.name;
-    toast('Añadido: ' + label, 'success');
+    const suffix = [flavor, size].filter(Boolean).join(' · ');
+    const label = suffix ? `${p.name} (${suffix})` : p.name;
+    toast('A&#241;adido: ' + label, 'success');
   }
 
   function refreshCart() {
@@ -2530,7 +2544,7 @@
         <div class="cart-item-img">${i.icon}</div>
         <div class="cart-item-info">
           <div class="cart-item-name">${i.name}</div>
-          ${i.flavor ? `<div class="cart-item-flavor">${i.flavor}</div>` : ''}
+          ${(i.flavor || i.size) ? `<div class="cart-item-flavor">${[i.flavor, i.size].filter(Boolean).join(' · ')}</div>` : ''}
           <div class="cart-item-price">${formatPrice(i.price * i.qty)}</div>
           <div class="qty">
             <button onclick="changeQty('${i.key}', -1)">-</button>
@@ -2746,12 +2760,15 @@
   // ---------- Product detail ----------
   let currentProductId = null;
   let currentFlavor = null;
+  let currentSize = null;
 
   function openProduct(id) {
     const p = PRODUCTS.find(x => x.id === id);
     if (!p) return;
     currentProductId = id;
     currentFlavor = (p.flavors && p.flavors.length) ? p.flavors[0] : null;
+    const pSizes = p.sizes && p.sizes.length ? p.sizes : (p.size ? [p.size] : []);
+    currentSize = pSizes.length ? pSizes[0] : null;
 
     const pmImg = document.getElementById('pm-img');
     pmImg.innerHTML = imgFor(p);
@@ -2772,6 +2789,15 @@
       descWrap.style.display = 'block';
     } else {
       descWrap.style.display = 'none';
+    }
+
+    const sizesWrap = document.getElementById('pm-sizes-wrap');
+    const sizesEl = document.getElementById('pm-sizes');
+    if (pSizes.length) {
+      sizesEl.innerHTML = pSizes.map((s, i) => `<span class="flavor-chip${i === 0 ? ' selected' : ''}" onclick="selectSize('${s.replace(/'/g, "\\'")}', this)">${esc(s)}</span>`).join('');
+      sizesWrap.style.display = 'block';
+    } else {
+      sizesWrap.style.display = 'none';
     }
 
     const flavorsWrap = document.getElementById('pm-flavors-wrap');
@@ -2839,13 +2865,18 @@
     document.querySelectorAll('#pm-flavors .flavor-chip').forEach(c => c.classList.remove('selected'));
     if (el) el.classList.add('selected');
   }
+  function selectSize(size, el) {
+    currentSize = size;
+    document.querySelectorAll('#pm-sizes .flavor-chip').forEach(c => c.classList.remove('selected'));
+    if (el) el.classList.add('selected');
+  }
 
   function closeProduct() {
     document.getElementById('product-modal').classList.remove('active');
   }
   function addCurrentProductToCart() {
     if (currentProductId) {
-      addProductToCart(currentProductId, currentFlavor);
+      addProductToCart(currentProductId, currentFlavor, currentSize);
       closeProduct();
     }
   }
@@ -3232,7 +3263,17 @@
             <input type="text" value="${esc(p.brand)}" placeholder="Marca" onchange="updateProduct(${p.id}, 'brand', this.value)">
             <input type="number" value="${p.price}" placeholder="Precio" onchange="updateProduct(${p.id}, 'price', parseFloat(this.value)||0)">
           </div>
-          <input type="text" value="${esc(p.size || '')}" placeholder="Tamaño (ej: 1kg, 300g, 60 caps)" onchange="updateProduct(${p.id}, 'size', this.value)">
+          <div style="background:#111;border:1px solid #2a2a2a;padding:8px 10px;">
+            <div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Presentaciones (kg / g / caps / unid)</div>
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <input type="text" id="szinp-${p.id}" placeholder="Ej: 1kg&#160;&#160;500g&#160;&#160;60caps" style="flex:1;background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;padding:6px 8px;font-size:12px;font-family:inherit;outline:none;"
+                onkeydown="if(event.key==='Enter'){addSize(${p.id},this);event.preventDefault();}">
+              <button class="editor-btn" onclick="addSize(${p.id},document.getElementById('szinp-${p.id}'))" style="flex-shrink:0;padding:6px 12px;">+</button>
+            </div>
+            <div id="sztags-${p.id}" style="display:flex;flex-wrap:wrap;gap:4px;">
+              ${(p.sizes||[]).map((s,i)=>`<span style="background:#1e1e1e;border:1px solid #333;padding:3px 8px;font-size:11px;border-radius:3px;display:inline-flex;align-items:center;gap:5px;">${esc(s)}<button onclick="removeSize(${p.id},${i})" style="background:none;border:none;color:#888;cursor:pointer;font-size:13px;line-height:1;padding:0;">&times;</button></span>`).join('')}
+            </div>
+          </div>
           <input type="text" value="${esc(p.shortdesc)}" placeholder="Descripción corta" onchange="updateProduct(${p.id}, 'shortdesc', this.value)">
           <textarea rows="3" placeholder="Descripción larga (se muestra en el desplegable)" onchange="updateProduct(${p.id}, 'desc', this.value)" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;padding:7px 10px;font-size:13px;font-family:inherit;outline:none;width:100%;resize:vertical;">${esc(p.desc)}</textarea>
           <select onchange="updateProduct(${p.id}, 'category', this.value)">
@@ -3307,6 +3348,27 @@
     toast('Producto eliminado');
   }
 
+  function addSize(id, inputEl) {
+    const val = inputEl.value.trim();
+    if (!val) return;
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    if (!p.sizes) p.sizes = [];
+    if (p.sizes.includes(val)) { toast('Ya existe esa presentación', 'error'); return; }
+    p.sizes.push(val);
+    inputEl.value = '';
+    saveProducts();
+    renderProductEditor();
+    toast('Presentación añadida', 'success');
+  }
+  function removeSize(id, idx) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p || !p.sizes) return;
+    p.sizes.splice(idx, 1);
+    saveProducts();
+    renderProductEditor();
+  }
+
   function addNewProduct() {
     const maxId = PRODUCTS.reduce((m, p) => Math.max(m, p.id), 0);
     PRODUCTS.unshift({
@@ -3314,7 +3376,7 @@
       name: 'Nuevo producto',
       brand: 'SupleFit',
       price: 0,
-      size: '',
+      sizes: [],
       shortdesc: '',
       flavors: [],
       nutrition: [],
