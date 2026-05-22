@@ -1447,6 +1447,138 @@
   .brand-edit-actions { display: flex; gap: 6px; }
   .brand-edit-actions .editor-btn { flex: 1; }
 
+  /* Combos editor */
+  .combos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .combo-card {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-left: 3px solid #0066ff;
+    padding: 16px;
+  }
+  .combo-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .combo-fields input, .combo-fields textarea {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+  }
+  .combo-fields textarea { grid-column: 1 / -1; resize: vertical; }
+  .combo-fields input:focus, .combo-fields textarea:focus { border-color: #0066ff; }
+  .combo-items-label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 12px 0 6px;
+  }
+  .combo-item {
+    background: #1a1a1a;
+    border: 1px solid #222;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .combo-item .name { flex: 1; font-size: 13px; color: #ccc; }
+  .combo-item .qty-input {
+    width: 56px;
+    background: #0d0d0d;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+    outline: none;
+    text-align: center;
+  }
+  .combo-item .qty-label { font-size: 11px; color: #666; }
+  .combo-item button {
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    color: #999;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .combo-item button:hover { border-color: #ff4757; color: #ff4757; }
+  .combo-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .combo-actions .editor-btn { padding: 7px 12px; }
+
+  /* Picker list */
+  .picker-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid #1a1a1a;
+    background: #0a0a0a;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .picker-item:hover { border-color: #0066ff; background: #0d0d0d; }
+  .picker-item-img {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #222, #0f0f0f);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+  .picker-item-img img { width: 100%; height: 100%; object-fit: cover; }
+  .picker-item-info { flex: 1; min-width: 0; }
+  .picker-item-name { font-size: 13px; font-weight: 700; }
+  .picker-item-meta { font-size: 11px; color: #888; }
+
+  /* Combo items in product modal (storefront) */
+  .combo-includes {
+    margin-top: 16px;
+  }
+  .combo-include-item {
+    background: #161616;
+    border: 1px solid #1f1f1f;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .combo-include-img {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #222, #0f0f0f);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+    overflow: hidden;
+  }
+  .combo-include-img img { width: 100%; height: 100%; object-fit: cover; }
+  .combo-include-info { flex: 1; min-width: 0; }
+  .combo-include-name { font-size: 13px; font-weight: 700; }
+  .combo-include-qty { font-size: 11px; color: #0066ff; font-weight: 700; }
+
   /* Responsive */
   @media (max-width: 900px) {
     .hero h1 { font-size: 44px; }
@@ -1853,6 +1985,10 @@
       <div class="modal-section-label">Información nutricional</div>
       <table class="nutrition-table"><tbody id="pm-nutrition"></tbody></table>
     </div>
+    <div id="pm-combo-wrap" class="combo-includes" style="display:none;">
+      <div class="modal-section-label">El combo incluye</div>
+      <div id="pm-combo-items"></div>
+    </div>
     <button class="btn" style="margin-top:24px;width:100%;" onclick="addCurrentProductToCart()">+ Añadir al carrito</button>
   </div>
 </div>
@@ -1947,6 +2083,17 @@
 
     <div class="admin-section" style="padding:24px;">
       <div class="editor-toolbar">
+        <h2>Combos</h2>
+        <button class="btn" onclick="addNewCombo()">+ Nuevo Combo</button>
+      </div>
+      <p style="color:#888;font-size:13px;margin-bottom:14px;">
+        Los combos son packs de varios productos a un precio especial. Aparecen en el menú "Combos".
+      </p>
+      <div class="combos-list" id="combos-editor"></div>
+    </div>
+
+    <div class="admin-section" style="padding:24px;">
+      <div class="editor-toolbar">
         <h2>Logos de Marcas</h2>
       </div>
       <p style="color:#888;font-size:13px;margin-bottom:14px;">
@@ -1955,6 +2102,16 @@
       <div class="brands-grid" id="brands-editor"></div>
     </div>
 
+  </div>
+</div>
+
+<!-- Combo item picker modal -->
+<div class="modal-overlay" id="combo-picker-modal">
+  <div class="modal" style="max-width:520px; max-height:80vh; overflow-y:auto;">
+    <button class="modal-close" onclick="closeComboPicker()" aria-label="Cerrar">&times;</button>
+    <h3>Agregar <span>producto</span></h3>
+    <p>Elegí qué producto incluir en el combo.</p>
+    <div id="combo-picker-list" style="margin-top:16px;"></div>
   </div>
 </div>
 
@@ -2569,6 +2726,29 @@
       nutWrap.style.display = 'none';
     }
 
+    // Items del combo
+    const comboWrap = document.getElementById('pm-combo-wrap');
+    const comboEl = document.getElementById('pm-combo-items');
+    if (p.category === 'combos' && Array.isArray(p.combo_items) && p.combo_items.length) {
+      comboEl.innerHTML = p.combo_items.map(it => {
+        const ref = PRODUCTS.find(x => x.id === it.product_id);
+        if (!ref) return '';
+        return `
+          <div class="combo-include-item">
+            <div class="combo-include-img">${imgFor(ref)}</div>
+            <div class="combo-include-info">
+              <div class="combo-include-name">${ref.name}${ref.size ? ' · ' + ref.size : ''}</div>
+              ${ref.brand ? `<div style="font-size:11px;color:#888;">${ref.brand}</div>` : ''}
+            </div>
+            <div class="combo-include-qty">x${it.qty || 1}</div>
+          </div>
+        `;
+      }).join('');
+      comboWrap.style.display = 'block';
+    } else {
+      comboWrap.style.display = 'none';
+    }
+
     document.getElementById('product-modal').classList.add('active');
   }
 
@@ -2644,7 +2824,7 @@
   }
 
   // Close any modal on overlay click
-  ['product-modal','newsletter-modal','info-modal'].forEach(id => {
+  ['product-modal','newsletter-modal','info-modal','combo-picker-modal'].forEach(id => {
     document.getElementById(id).addEventListener('click', (e) => {
       if (e.target.id === id) document.getElementById(id).classList.remove('active');
     });
@@ -2692,6 +2872,7 @@
       document.getElementById('admin-panel').classList.add('active');
       document.body.style.overflow = 'hidden';
       renderProductEditor();
+      renderCombosEditor();
       renderBrandsEditor();
       updateTokenUI();
     } else {
@@ -2790,6 +2971,125 @@
       <p style="color:#facc15; font-size:13px; margin-top:12px;">⚠ El token solo se muestra una vez. Copialo bien antes de cerrar la página.</p>
     `;
     document.getElementById('info-modal').classList.add('active');
+  }
+
+  // ---------- Combos editor ----------
+  let currentComboTargetId = null;
+
+  function renderCombosEditor() {
+    const el = document.getElementById('combos-editor');
+    if (!el) return;
+    const combos = PRODUCTS.filter(p => p.category === 'combos');
+    if (combos.length === 0) {
+      el.innerHTML = '<p style="color:#666;font-size:13px;">No hay combos todavía. Apretá "+ Nuevo Combo" para crear el primero.</p>';
+      return;
+    }
+    el.innerHTML = combos.map(c => {
+      const items = Array.isArray(c.combo_items) ? c.combo_items : [];
+      const itemsHTML = items.map((it, idx) => {
+        const ref = PRODUCTS.find(p => p.id === it.product_id);
+        const name = ref ? ref.name : '(producto eliminado)';
+        return `
+          <div class="combo-item">
+            <span class="name">${esc(name)}</span>
+            <span class="qty-label">x</span>
+            <input type="number" class="qty-input" min="1" value="${it.qty || 1}" onchange="updateComboItemQty(${c.id}, ${idx}, parseInt(this.value)||1)">
+            <button onclick="removeComboItem(${c.id}, ${idx})">Quitar</button>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="combo-card">
+          <div class="combo-fields">
+            <input type="text" value="${esc(c.name)}" placeholder="Nombre del combo" onchange="updateProduct(${c.id}, 'name', this.value)">
+            <input type="number" value="${c.price}" placeholder="Precio" onchange="updateProduct(${c.id}, 'price', parseFloat(this.value)||0)">
+            <input type="text" value="${esc(c.size || '')}" placeholder="Tamaño (ej: Pack x3)" onchange="updateProduct(${c.id}, 'size', this.value)">
+            <textarea rows="2" placeholder="Descripción corta" onchange="updateProduct(${c.id}, 'shortdesc', this.value)">${esc(c.shortdesc || '')}</textarea>
+          </div>
+          <div class="combo-items-label">Productos incluidos</div>
+          ${itemsHTML || '<p style="color:#666;font-size:12px;padding:8px 0;">Sin productos. Agregá uno con el botón de abajo.</p>'}
+          <div class="combo-actions">
+            <button class="editor-btn" onclick="openComboPicker(${c.id})">+ Agregar producto</button>
+            <button class="editor-btn" onclick="document.getElementById('combo-file-${c.id}').click()">Cambiar foto</button>
+            <input type="file" id="combo-file-${c.id}" accept="image/*" style="display:none" onchange="handleImageUpload(${c.id}, this)">
+            ${c.image ? `<button class="editor-btn" onclick="removeImage(${c.id})">Quitar foto</button>` : ''}
+            <button class="editor-btn danger" onclick="deleteProduct(${c.id})">Eliminar combo</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function addNewCombo() {
+    const maxId = PRODUCTS.reduce((m, p) => Math.max(m, p.id), 0);
+    PRODUCTS.unshift({
+      id: maxId + 1,
+      name: 'Nuevo Combo',
+      brand: 'SupleFit',
+      price: 0,
+      size: 'Pack',
+      shortdesc: '',
+      flavors: [],
+      nutrition: [],
+      desc: '',
+      category: 'combos',
+      combo_items: []
+    });
+    saveProducts();
+    renderProducts();
+    renderCombosEditor();
+    renderProductEditor();
+    toast('Combo creado', 'success');
+  }
+
+  function openComboPicker(comboId) {
+    currentComboTargetId = comboId;
+    const list = document.getElementById('combo-picker-list');
+    // Mostrar productos que NO sean combos
+    const items = PRODUCTS.filter(p => p.category !== 'combos');
+    if (items.length === 0) {
+      list.innerHTML = '<p style="color:#666;">No hay productos para agregar.</p>';
+    } else {
+      list.innerHTML = items.map(p => `
+        <div class="picker-item" onclick="addComboItem(${p.id})">
+          <div class="picker-item-img">${imgFor(p)}</div>
+          <div class="picker-item-info">
+            <div class="picker-item-name">${esc(p.name)}</div>
+            <div class="picker-item-meta">${esc(p.brand)} · ${formatPrice(p.price)}${p.size ? ' · ' + esc(p.size) : ''}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    document.getElementById('combo-picker-modal').classList.add('active');
+  }
+  function closeComboPicker() {
+    document.getElementById('combo-picker-modal').classList.remove('active');
+  }
+  function addComboItem(productId) {
+    const combo = PRODUCTS.find(p => p.id === currentComboTargetId);
+    if (!combo) { closeComboPicker(); return; }
+    if (!Array.isArray(combo.combo_items)) combo.combo_items = [];
+    const existing = combo.combo_items.find(it => it.product_id === productId);
+    if (existing) existing.qty = (existing.qty || 1) + 1;
+    else combo.combo_items.push({ product_id: productId, qty: 1 });
+    saveProducts();
+    renderCombosEditor();
+    closeComboPicker();
+    toast('Producto agregado al combo', 'success');
+  }
+  function removeComboItem(comboId, idx) {
+    const combo = PRODUCTS.find(p => p.id === comboId);
+    if (!combo || !Array.isArray(combo.combo_items)) return;
+    combo.combo_items.splice(idx, 1);
+    saveProducts();
+    renderCombosEditor();
+  }
+  function updateComboItemQty(comboId, idx, qty) {
+    const combo = PRODUCTS.find(p => p.id === comboId);
+    if (!combo || !Array.isArray(combo.combo_items)) return;
+    if (qty < 1) qty = 1;
+    combo.combo_items[idx].qty = qty;
+    saveProducts();
   }
 
   function renderBrandsEditor() {
@@ -2891,6 +3191,10 @@
       renderMarcas();
       renderBrandsEditor();
     }
+    if (field === 'category' || field === 'name' || field === 'price') {
+      // Categoría puede convertir un producto a/desde combo
+      renderCombosEditor();
+    }
     toast('Cambios guardados', 'success');
   }
 
@@ -2933,6 +3237,7 @@
     saveProducts();
     renderProducts();
     renderProductEditor();
+    renderCombosEditor();
     toast('Producto eliminado');
   }
 
