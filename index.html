@@ -86,6 +86,110 @@
     color: #fff;
     transform: none;
   }
+
+  /* Hamburger button */
+  .hamburger-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    padding: 0;
+  }
+  .hamburger-btn span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #fff;
+    transition: background 0.15s;
+  }
+  .hamburger-btn:hover { transform: none; }
+  .hamburger-btn:hover span { background: #0066ff; }
+
+  /* Menu drawer (left) */
+  .menu-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 320px;
+    height: 100vh;
+    background: #0d0d0d;
+    border-right: 1px solid #1a1a1a;
+    z-index: 201;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .menu-drawer.active { transform: translateX(0); }
+  .menu-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .menu-header h3 {
+    font-size: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .menu-header h3 span { color: #0066ff; }
+  .menu-body { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .menu-toggle {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 16px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: inherit;
+    border-bottom: 1px solid #161616;
+  }
+  .menu-toggle:hover { background: #141414; color: #0066ff; }
+  .menu-toggle .arrow {
+    color: #0066ff;
+    transition: transform 0.25s;
+    font-size: 12px;
+  }
+  .menu-section.open .arrow { transform: rotate(180deg); }
+  .menu-sub {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: #060606;
+  }
+  .menu-section.open .menu-sub { max-height: 500px; }
+  .menu-sub a, .menu-link {
+    display: block;
+    padding: 12px 32px;
+    color: #ccc;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-bottom: 1px solid #121212;
+    transition: all 0.15s;
+  }
+  .menu-sub a:hover, .menu-link:hover { background: #0066ff; color: #fff; }
+  .menu-link {
+    padding: 16px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    border-bottom: 1px solid #161616;
+  }
   .cart-badge {
     position: absolute;
     top: -6px;
@@ -1201,10 +1305,13 @@
 <header>
   <div class="header-inner">
     <div class="header-side header-left">
-      <button class="icon-btn search-btn" aria-label="Buscar" onclick="toggleSearch()">&#128269;</button>
+      <button class="icon-btn hamburger-btn" aria-label="Menú" onclick="openMenu()">
+        <span></span><span></span><span></span>
+      </button>
     </div>
     <a href="#" class="logo" onclick="goHome();return false;"><span>SUPLE</span>FIT</a>
     <div class="header-side header-right">
+      <button class="icon-btn search-btn" aria-label="Buscar" onclick="toggleSearch()">&#128269;</button>
       <button class="icon-btn" aria-label="Carrito" onclick="openCart()">
         &#128722;<span class="cart-badge" id="cart-count">0</span>
       </button>
@@ -1427,6 +1534,30 @@
   </div>
 </footer>
 
+<!-- Menu drawer (left) -->
+<div class="drawer-overlay" id="menu-overlay" onclick="closeMenu()"></div>
+<aside class="menu-drawer" id="menu-drawer">
+  <div class="menu-header">
+    <h3><span>SUPLE</span>FIT</h3>
+    <button class="modal-close" onclick="closeMenu()" style="position:static;" aria-label="Cerrar">&times;</button>
+  </div>
+  <div class="menu-body">
+    <div class="menu-section" id="menu-sec-brands">
+      <button class="menu-toggle" onclick="toggleMenuSection('menu-sec-brands')" type="button">
+        <span>Marcas</span><span class="arrow">&#9662;</span>
+      </button>
+      <div class="menu-sub" id="menu-brands-list"></div>
+    </div>
+    <div class="menu-section" id="menu-sec-supps">
+      <button class="menu-toggle" onclick="toggleMenuSection('menu-sec-supps')" type="button">
+        <span>Suplementos</span><span class="arrow">&#9662;</span>
+      </button>
+      <div class="menu-sub" id="menu-supps-list"></div>
+    </div>
+    <a class="menu-link" onclick="filterCategory('combos');closeMenu();">Combos</a>
+  </div>
+</aside>
+
 <!-- Cart drawer -->
 <div class="drawer-overlay" id="cart-overlay" onclick="closeCart()"></div>
 <aside class="drawer" id="cart-drawer">
@@ -1576,7 +1707,8 @@
     quemadores: '&#128293;',
     recuperacion: '&#128167;',
     volumen: '&#128200;',
-    accesorios: '&#129380;'
+    accesorios: '&#129380;',
+    combos: '&#127873;'
   };
   let PRODUCTS = [
     { id: 1, name: 'Proteína Hoch', brand: 'Hoch', price: 45800, shortdesc: 'Whey de alta calidad · 25g proteína', flavors: ['Chocolate','Vainilla','Frutilla','Dulce de leche'], nutrition: [['Proteínas','25g'],['Carbohidratos','3g'],['Grasas','1.5g'],['Calorías','125kcal'],['Porciones','30']], desc: 'Ideal para recuperación muscular post-entreno y aumento de masa magra.', category: 'proteinas' },
@@ -1956,7 +2088,8 @@
       quemadores: 'Quemadores',
       recuperacion: 'Recuperación',
       volumen: 'Volumen',
-      accesorios: 'Accesorios'
+      accesorios: 'Accesorios',
+      combos: 'Combos'
     };
     document.querySelectorAll('.product').forEach(p => {
       const cats = (p.dataset.category || '').split(' ');
@@ -1967,6 +2100,50 @@
     bar.classList.add('active');
     scrollToProducts();
   }
+  function filterBrand(brand) {
+    document.querySelectorAll('.product').forEach(card => {
+      const id = parseInt(card.dataset.id);
+      const p = PRODUCTS.find(x => x.id === id);
+      card.style.display = (p && p.brand === brand) ? '' : 'none';
+    });
+    document.getElementById('filter-label').textContent = 'Filtrando por marca: ' + brand;
+    document.getElementById('filter-bar').classList.add('active');
+    scrollToProducts();
+    closeMenu();
+  }
+
+  // ---------- Menu drawer ----------
+  function openMenu() {
+    populateMenu();
+    document.getElementById('menu-overlay').classList.add('active');
+    document.getElementById('menu-drawer').classList.add('active');
+  }
+  function closeMenu() {
+    document.getElementById('menu-overlay').classList.remove('active');
+    document.getElementById('menu-drawer').classList.remove('active');
+  }
+  function toggleMenuSection(sectionId) {
+    const sec = document.getElementById(sectionId);
+    if (!sec) return;
+    // Cerrar otras secciones
+    document.querySelectorAll('.menu-section').forEach(s => {
+      if (s !== sec) s.classList.remove('open');
+    });
+    sec.classList.toggle('open');
+  }
+  function populateMenu() {
+    // Marcas únicas
+    const brands = [...new Set(PRODUCTS.map(p => p.brand).filter(Boolean))].sort();
+    document.getElementById('menu-brands-list').innerHTML = brands.map(b =>
+      `<a onclick="filterBrand('${b.replace(/'/g, "\\'")}');">${b}</a>`
+    ).join('');
+    // Categorías (excluyendo combos que va aparte)
+    const cats = CATEGORIES.filter(c => c !== 'combos');
+    document.getElementById('menu-supps-list').innerHTML = cats.map(c =>
+      `<a onclick="filterCategory('${c}');closeMenu();">${CAT_LABELS[c] || c}</a>`
+    ).join('');
+  }
+
   function clearFilter() {
     document.querySelectorAll('.product').forEach(p => p.style.display = '');
     document.getElementById('filter-bar').classList.remove('active');
@@ -2107,6 +2284,7 @@
     if (e.key === 'Escape') {
       document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
       closeCart();
+      closeMenu();
     }
   });
 
@@ -2158,11 +2336,11 @@
   });
 
   // ---------- Editor de Productos ----------
-  const CATEGORIES = ['proteinas','creatinas','preentreno','vitaminas','quemadores','recuperacion','volumen','accesorios'];
+  const CATEGORIES = ['proteinas','creatinas','preentreno','vitaminas','quemadores','recuperacion','volumen','accesorios','combos'];
   const CAT_LABELS = {
     proteinas: 'Proteínas', creatinas: 'Creatinas', preentreno: 'Pre-Entreno',
     vitaminas: 'Vitaminas', quemadores: 'Quemadores', recuperacion: 'Recuperación',
-    volumen: 'Volumen', accesorios: 'Accesorios'
+    volumen: 'Volumen', accesorios: 'Accesorios', combos: 'Combos'
   };
 
   function esc(s) {
