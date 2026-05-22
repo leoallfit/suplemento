@@ -459,6 +459,24 @@
     text-transform: uppercase;
     letter-spacing: 1px;
   }
+  .product-size {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.78);
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    backdrop-filter: blur(4px);
+  }
+  @media (max-width: 600px) {
+    .product-size { font-size: 9px; padding: 2px 7px; bottom: 6px; right: 6px; }
+  }
   .product-info { padding: 14px; }
   .product-brand {
     font-size: 10px;
@@ -2181,7 +2199,7 @@
     const grid = document.getElementById('products-grid');
     grid.innerHTML = PRODUCTS.map(p => `
       <div class="product" data-id="${p.id}" data-category="${p.category}" data-name="${p.name}" onclick="openProduct(${p.id})">
-        <div class="product-image" style="${p.image ? 'padding:0;overflow:hidden;' : ''}">${imgFor(p)}</div>
+        <div class="product-image" style="${p.image ? 'padding:0;overflow:hidden;' : ''}">${imgFor(p)}${p.size ? `<span class="product-size">${esc(p.size)}</span>` : ''}</div>
         <div class="product-info">
           <div class="product-brand">${p.brand}</div>
           <div class="product-name">${p.name}</div>
@@ -2763,6 +2781,7 @@
             <input type="text" value="${esc(p.brand)}" placeholder="Marca" onchange="updateProduct(${p.id}, 'brand', this.value)">
             <input type="number" value="${p.price}" placeholder="Precio" onchange="updateProduct(${p.id}, 'price', parseFloat(this.value)||0)">
           </div>
+          <input type="text" value="${esc(p.size || '')}" placeholder="Tamaño (ej: 1kg, 300g, 60 caps)" onchange="updateProduct(${p.id}, 'size', this.value)">
           <input type="text" value="${esc(p.shortdesc)}" placeholder="Descripción corta" onchange="updateProduct(${p.id}, 'shortdesc', this.value)">
           <textarea rows="3" placeholder="Descripción larga (se muestra en el desplegable)" onchange="updateProduct(${p.id}, 'desc', this.value)" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;padding:7px 10px;font-size:13px;font-family:inherit;outline:none;width:100%;resize:vertical;">${esc(p.desc)}</textarea>
           <select onchange="updateProduct(${p.id}, 'category', this.value)">
@@ -2839,6 +2858,7 @@
       name: 'Nuevo producto',
       brand: 'SupleFit',
       price: 0,
+      size: '',
       shortdesc: '',
       flavors: [],
       nutrition: [],
