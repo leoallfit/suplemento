@@ -920,6 +920,19 @@
     margin-bottom: 16px;
     gap: 12px;
   }
+  .sync-status {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 10px;
+    border: 1px solid #2a2a2a;
+  }
+  .sync-status.sync-idle { color: #888; }
+  .sync-status.sync-syncing { color: #facc15; border-color: rgba(250,204,21,0.4); }
+  .sync-status.sync-synced { color: #4ade80; border-color: rgba(74,222,128,0.4); }
+  .sync-status.sync-error { color: #ff4757; border-color: rgba(255,71,87,0.4); }
   .editor-toolbar h2 {
     font-size: 14px;
     font-weight: 700;
@@ -1428,6 +1441,30 @@
 
     <div class="admin-section" style="padding:24px;">
       <div class="editor-toolbar">
+        <h2>Conexión GitHub</h2>
+        <span class="sync-status sync-idle" id="sync-status">No conectado</span>
+      </div>
+      <p style="color:#888; font-size:13px; margin-bottom:14px;">
+        Conectá tu cuenta para que los cambios se guarden en el repo y se vean en todos los dispositivos.
+        <a href="#" onclick="openTokenHelp();return false;" style="color:#0066ff;">¿Cómo genero el token?</a>
+      </p>
+      <div id="gh-token-input-wrap">
+        <div style="display:flex; gap:8px; flex-wrap: wrap;">
+          <input type="password" id="gh-token-input" placeholder="Pegá tu token aquí (ghp_…)" style="flex:1; min-width:200px; background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;padding:10px 14px;font-size:13px;font-family:inherit;outline:none;">
+          <button class="btn" onclick="connectGitHub()">Conectar</button>
+        </div>
+      </div>
+      <div id="gh-token-connected-wrap" style="display:none;">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <span id="gh-token-mask" style="color:#888;font-family:monospace;font-size:13px;flex:1;">ghp_•••••••••</span>
+          <button class="editor-btn" onclick="testGitHub()">Probar</button>
+          <button class="editor-btn danger" onclick="disconnectGitHub()">Desconectar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-section" style="padding:24px;">
+      <div class="editor-toolbar">
         <h2>Editor de Productos</h2>
         <div style="display:flex;gap:10px;">
           <button class="btn" style="background:transparent;border:2px solid #2a2a2a;color:#ccc;" onclick="resetProducts()">Restaurar</button>
@@ -1483,19 +1520,164 @@
 
   // ---------- Persistencia ----------
   const STORAGE_KEY = 'puresupp_products_v1';
-  function saveProducts() {
+  const TOKEN_KEY = 'gh_token';
+  const REMOTE_SHA_KEY = 'gh_products_sha';
+  const GH_OWNER = 'leoallfit';
+  const GH_REPO = 'suplemento';
+  const GH_PATH = 'products.json';
+  const GH_API_BASE = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`;
+
+  function saveLocal() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(PRODUCTS)); } catch(e) {}
   }
-  function loadProducts() {
+  function loadLocal() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) PRODUCTS = parsed;
+        if (Array.isArray(parsed) && parsed.length) {
+          PRODUCTS = parsed;
+          return true;
+        }
       }
     } catch(e) {}
+    return false;
   }
-  loadProducts();
+
+  // UTF-8 safe base64
+  function b64encode(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+  function b64decode(str) {
+    return decodeURIComponent(escape(atob(str)));
+  }
+
+  function getToken() {
+    try { return localStorage.getItem(TOKEN_KEY) || ''; } catch(e) { return ''; }
+  }
+  function setToken(t) {
+    try { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); } catch(e) {}
+  }
+  function getRemoteSha() {
+    try { return localStorage.getItem(REMOTE_SHA_KEY) || ''; } catch(e) { return ''; }
+  }
+  function setRemoteSha(sha) {
+    try { if (sha) localStorage.setItem(REMOTE_SHA_KEY, sha); } catch(e) {}
+  }
+
+  // Fetch products from GitHub Pages (public, no auth)
+  async function fetchRemoteProducts() {
+    try {
+      const url = 'products.json?t=' + Date.now();
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length) {
+        PRODUCTS = data;
+        saveLocal();
+        return true;
+      }
+    } catch(e) {
+      console.warn('No se pudo cargar products.json remoto:', e);
+    }
+    return false;
+  }
+
+  // Get current file SHA from GitHub API (needed to update)
+  async function fetchCurrentSha() {
+    const token = getToken();
+    const headers = token ? { Authorization: 'Bearer ' + token } : {};
+    try {
+      const res = await fetch(GH_API_BASE + '?ref=main', { headers, cache: 'no-store' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data.sha) {
+        setRemoteSha(data.sha);
+        return data.sha;
+      }
+    } catch(e) {
+      console.warn('No se pudo obtener SHA remoto:', e);
+    }
+    return null;
+  }
+
+  // Push PRODUCTS to GitHub via API
+  async function pushToGitHub(commitMsg) {
+    const token = getToken();
+    if (!token) {
+      toast('Conectá tu cuenta de GitHub primero', 'error');
+      return false;
+    }
+    setSyncStatus('syncing');
+    const sha = await fetchCurrentSha();
+    if (!sha) {
+      setSyncStatus('error');
+      toast('Error al leer del repo. ¿Token válido?', 'error');
+      return false;
+    }
+    try {
+      const content = JSON.stringify(PRODUCTS, null, 2) + '\n';
+      const res = await fetch(GH_API_BASE, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github+json'
+        },
+        body: JSON.stringify({
+          message: commitMsg || 'Update products from admin',
+          content: b64encode(content),
+          sha: sha,
+          branch: 'main'
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'HTTP ' + res.status);
+      }
+      const data = await res.json();
+      if (data.content && data.content.sha) setRemoteSha(data.content.sha);
+      setSyncStatus('synced');
+      return true;
+    } catch(e) {
+      console.error('Push falló:', e);
+      setSyncStatus('error');
+      toast('Error al guardar: ' + e.message, 'error');
+      return false;
+    }
+  }
+
+  // Debounced auto-sync
+  let syncDebounceTimer = null;
+  function saveProducts(commitMsg) {
+    saveLocal();
+    if (!getToken()) return;
+    if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+    syncDebounceTimer = setTimeout(() => {
+      pushToGitHub(commitMsg || 'Update products');
+    }, 1200);
+  }
+
+  function setSyncStatus(status) {
+    const el = document.getElementById('sync-status');
+    if (!el) return;
+    const labels = {
+      idle: { text: 'No conectado', cls: 'sync-idle' },
+      syncing: { text: 'Sincronizando…', cls: 'sync-syncing' },
+      synced: { text: '✓ Sincronizado', cls: 'sync-synced' },
+      error: { text: '✗ Error', cls: 'sync-error' }
+    };
+    const info = labels[status] || labels.idle;
+    el.textContent = info.text;
+    el.className = 'sync-status ' + info.cls;
+  }
+
+  // On boot: try fetch remote, fallback to local cache
+  (async function bootProducts() {
+    const remoteOk = await fetchRemoteProducts();
+    if (!remoteOk) loadLocal();
+    if (typeof renderProducts === 'function') renderProducts();
+  })();
 
   function renderProducts() {
     const grid = document.getElementById('products-grid');
@@ -1727,7 +1909,8 @@
     terminos: { t: 'Términos y condiciones', b: 'Al usar este sitio aceptas nuestras condiciones de uso y venta. Los precios incluyen IVA. Stocks limitados. Imágenes orientativas.' },
     privacidad: { t: 'Privacidad', b: 'Tratamos tus datos conforme al RGPD. Solo los usamos para gestionar pedidos y mejorar tu experiencia. No los compartimos con terceros sin tu consentimiento.' },
     cookies: { t: 'Política de cookies', b: 'Usamos cookies técnicas y de análisis. Puedes desactivar las opcionales en cualquier momento desde la configuración de tu navegador.' },
-    legal: { t: 'Aviso legal', b: 'SupleFit S.L. · CIF B12345678 · Dirección fiscal: Calle Ejemplo 1, 28001 Madrid. Inscrita en el Registro Mercantil de Madrid.' }
+    legal: { t: 'Aviso legal', b: 'SupleFit S.L. · CIF B12345678 · Dirección fiscal: Calle Ejemplo 1, 28001 Madrid. Inscrita en el Registro Mercantil de Madrid.' },
+    ghtoken: { t: 'Generar token de GitHub', b: '1) Andá a github.com/settings/tokens/new (link abajo). 2) En "Note" poné SUPLEFIT Admin. 3) Marcá solo el scope "public_repo". 4) Click en "Generate token" abajo. 5) Copiá el token (empieza con ghp_) y pegalo en el campo de Conexión GitHub. ⚠ El token solo se muestra una vez, copialo bien. Link directo: https://github.com/settings/tokens/new?description=SUPLEFIT+Admin&scopes=public_repo' }
   };
   function openInfo(key) {
     const data = INFO[key];
@@ -1787,6 +1970,7 @@
       document.getElementById('admin-panel').classList.add('active');
       document.body.style.overflow = 'hidden';
       renderProductEditor();
+      updateTokenUI();
     } else {
       document.getElementById('pwd-error').textContent = 'Clave incorrecta';
       document.getElementById('pwd-input').value = '';
@@ -1813,6 +1997,74 @@
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
       .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ---------- GitHub Connection ----------
+  function updateTokenUI() {
+    const has = !!getToken();
+    document.getElementById('gh-token-input-wrap').style.display = has ? 'none' : 'block';
+    document.getElementById('gh-token-connected-wrap').style.display = has ? 'block' : 'none';
+    if (has) {
+      const t = getToken();
+      const mask = t.slice(0, 6) + '•••••••••' + t.slice(-4);
+      document.getElementById('gh-token-mask').textContent = mask;
+      setSyncStatus('synced');
+    } else {
+      setSyncStatus('idle');
+    }
+  }
+
+  async function connectGitHub() {
+    const input = document.getElementById('gh-token-input');
+    const t = input.value.trim();
+    if (!t) { toast('Pegá tu token', 'error'); return; }
+    setToken(t);
+    setSyncStatus('syncing');
+    const sha = await fetchCurrentSha();
+    if (!sha) {
+      setToken('');
+      setSyncStatus('error');
+      toast('Token inválido o sin permisos sobre el repo', 'error');
+      return;
+    }
+    input.value = '';
+    updateTokenUI();
+    toast('Conectado a GitHub', 'success');
+  }
+
+  function disconnectGitHub() {
+    if (!confirm('¿Desconectar de GitHub? Los próximos cambios solo quedarán en este dispositivo.')) return;
+    setToken('');
+    updateTokenUI();
+    toast('Desconectado');
+  }
+
+  async function testGitHub() {
+    setSyncStatus('syncing');
+    const sha = await fetchCurrentSha();
+    if (sha) {
+      setSyncStatus('synced');
+      toast('Conexión OK', 'success');
+    } else {
+      setSyncStatus('error');
+      toast('Falló: revisá el token', 'error');
+    }
+  }
+
+  function openTokenHelp() {
+    const url = 'https://github.com/settings/tokens/new?description=SUPLEFIT+Admin&scopes=public_repo';
+    document.getElementById('info-title').textContent = 'Generar token de GitHub';
+    document.getElementById('info-body').innerHTML = `
+      <ol style="line-height:1.8; padding-left:20px;">
+        <li>Click <a href="${url}" target="_blank" style="color:#0066ff;">en este link</a> (abre la página de GitHub para crear token).</li>
+        <li>Si te pide login, ingresá con <b>leoallfit</b>.</li>
+        <li>Bajá hasta abajo y click en <b>"Generate token"</b>.</li>
+        <li>Copiá el token (empieza con <code style="background:#1a1a1a;padding:2px 6px;">ghp_</code>).</li>
+        <li>Volvé acá y pegalo en el campo de Conexión GitHub.</li>
+      </ol>
+      <p style="color:#facc15; font-size:13px; margin-top:12px;">⚠ El token solo se muestra una vez. Copialo bien antes de cerrar la página.</p>
+    `;
+    document.getElementById('info-modal').classList.add('active');
   }
 
   function renderProductEditor() {
