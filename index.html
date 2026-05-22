@@ -2475,6 +2475,7 @@
     PRODUCTS.forEach(p => { if (!p.sizes) p.sizes = p.size ? [p.size] : []; });
     if (typeof renderProducts === 'function') renderProducts();
     if (typeof renderMarcas === 'function') renderMarcas();
+    if (typeof refreshCart === 'function') refreshCart(); // restaurar badge del carrito
   })();
 
   function renderProducts() {
@@ -2516,7 +2517,16 @@
 
   // ---------- Cart ----------
   const WHATSAPP_NUMBER = '5493515146361'; // Cambiar acá para apuntar a otro número (sin + ni espacios)
-  const cart = [];
+  const CART_KEY = 'puresupp_cart_v1';
+  let cart = [];
+  try {
+    const _saved = localStorage.getItem(CART_KEY);
+    if (_saved) cart = JSON.parse(_saved) || [];
+  } catch(e) {}
+
+  function saveCart() {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch(e) {}
+  }
 
   function lineKeyOf(id, flavor, size) { return id + '|' + (flavor || '') + '|' + (size || ''); }
 
@@ -2552,6 +2562,7 @@
   }
 
   function refreshCart() {
+    saveCart();
     const count = cart.reduce((s, i) => s + i.qty, 0);
     document.getElementById('cart-count').textContent = count;
     const body = document.getElementById('cart-body');
