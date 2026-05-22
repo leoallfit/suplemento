@@ -211,11 +211,23 @@
     background: #1a1a1a;
     border: 1px solid #2a2a2a;
     color: #ccc;
-    padding: 4px 10px;
-    font-size: 11px;
+    padding: 6px 12px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .flavor-chip:hover {
+    border-color: #0066ff;
+    color: #fff;
+  }
+  .flavor-chip.selected {
+    background: #0066ff;
+    border-color: #0066ff;
+    color: #fff;
   }
   .nutrition-table {
     margin-top: 16px;
@@ -506,6 +518,14 @@
     margin-bottom: 4px;
   }
   .cart-item-price { color: #0066ff; font-weight: 800; font-size: 14px; }
+  .cart-item-flavor {
+    color: #0066ff;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
   .qty {
     display: flex;
     align-items: center;
@@ -1737,7 +1757,7 @@
           <div class="product-shortdesc">${p.shortdesc}</div>
           <div class="product-footer">
             <span class="product-price">${formatPrice(p.price)}</span>
-            <button class="add-cart" onclick="event.stopPropagation();addProductToCart(${p.id})">+ Añadir</button>
+            <button class="add-cart" onclick="event.stopPropagation();quickAdd(${p.id})">+ Añadir</button>
           </div>
         </div>
       </div>
@@ -1763,14 +1783,32 @@
   const WHATSAPP_NUMBER = '5493515146361'; // Cambiar acá para apuntar a otro número (sin + ni espacios)
   const cart = [];
 
-  function addProductToCart(id) {
+  function lineKeyOf(id, flavor) { return id + '|' + (flavor || ''); }
+
+  function quickAdd(id) {
     const p = PRODUCTS.find(x => x.id === id);
     if (!p) return;
-    const existing = cart.find(i => i.id === id);
+    if (p.flavors && p.flavors.length > 1) {
+      // Tiene más de un sabor: abrir modal para que elija
+      openProduct(id);
+      toast('Elegí un sabor', 'success');
+      return;
+    }
+    // Sin sabores o solo uno: agregar directo
+    const flavor = (p.flavors && p.flavors.length === 1) ? p.flavors[0] : null;
+    addProductToCart(id, flavor);
+  }
+
+  function addProductToCart(id, flavor) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    const key = lineKeyOf(id, flavor);
+    const existing = cart.find(i => i.key === key);
     if (existing) existing.qty++;
-    else cart.push({ id: p.id, name: p.name, price: p.price, icon: imgFor(p), qty: 1 });
+    else cart.push({ key, id: p.id, name: p.name, flavor: flavor || null, price: p.price, icon: imgFor(p), qty: 1 });
     refreshCart();
-    toast('Añadido: ' + p.name, 'success');
+    const label = flavor ? `${p.name} (${flavor})` : p.name;
+    toast('Añadido: ' + label, 'success');
   }
 
   function refreshCart() {
@@ -1789,32 +1827,33 @@
         <div class="cart-item-img">${i.icon}</div>
         <div class="cart-item-info">
           <div class="cart-item-name">${i.name}</div>
+          ${i.flavor ? `<div class="cart-item-flavor">${i.flavor}</div>` : ''}
           <div class="cart-item-price">${formatPrice(i.price * i.qty)}</div>
           <div class="qty">
-            <button onclick="changeQty(${i.id}, -1)">-</button>
+            <button onclick="changeQty('${i.key}', -1)">-</button>
             <span>${i.qty}</span>
-            <button onclick="changeQty(${i.id}, 1)">+</button>
+            <button onclick="changeQty('${i.key}', 1)">+</button>
           </div>
         </div>
-        <button class="cart-remove" onclick="removeFromCart(${i.id})" aria-label="Eliminar">&times;</button>
+        <button class="cart-remove" onclick="removeFromCart('${i.key}')" aria-label="Eliminar">&times;</button>
       </div>
     `).join('');
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
     document.getElementById('cart-total-amount').textContent = formatPrice(total);
   }
 
-  function changeQty(id, delta) {
-    const item = cart.find(i => i.id === id);
+  function changeQty(key, delta) {
+    const item = cart.find(i => i.key === key);
     if (!item) return;
     item.qty += delta;
     if (item.qty <= 0) {
-      const idx = cart.findIndex(i => i.id === id);
+      const idx = cart.findIndex(i => i.key === key);
       cart.splice(idx, 1);
     }
     refreshCart();
   }
-  function removeFromCart(id) {
-    const idx = cart.findIndex(i => i.id === id);
+  function removeFromCart(key) {
+    const idx = cart.findIndex(i => i.key === key);
     if (idx >= 0) cart.splice(idx, 1);
     refreshCart();
     toast('Producto eliminado');
@@ -1830,7 +1869,7 @@
   }
   function checkout() {
     if (cart.length === 0) return;
-    const lines = cart.map(i => `• ${i.name} x${i.qty} — ${formatPrice(i.price * i.qty)}`);
+    const lines = cart.map(i => `• ${i.name}${i.flavor ? ' (' + i.flavor + ')' : ''} x${i.qty} — ${formatPrice(i.price * i.qty)}`);
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
     const msg = `Hola SUPLEFIT! Quiero hacer este pedido:\n\n${lines.join('\n')}\n\n*Total: ${formatPrice(total)}*`;
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
@@ -1899,10 +1938,14 @@
 
   // ---------- Product detail ----------
   let currentProductId = null;
+  let currentFlavor = null;
+
   function openProduct(id) {
     const p = PRODUCTS.find(x => x.id === id);
     if (!p) return;
     currentProductId = id;
+    currentFlavor = (p.flavors && p.flavors.length) ? p.flavors[0] : null;
+
     const pmImg = document.getElementById('pm-img');
     pmImg.innerHTML = imgFor(p);
     pmImg.style.padding = p.image ? '0' : '';
@@ -1915,7 +1958,7 @@
     const flavorsWrap = document.getElementById('pm-flavors-wrap');
     const flavorsEl = document.getElementById('pm-flavors');
     if (p.flavors && p.flavors.length) {
-      flavorsEl.innerHTML = p.flavors.map(f => `<span class="flavor-chip">${f}</span>`).join('');
+      flavorsEl.innerHTML = p.flavors.map((f, i) => `<span class="flavor-chip${i === 0 ? ' selected' : ''}" onclick="selectFlavor('${f.replace(/'/g, "\\'")}', this)">${f}</span>`).join('');
       flavorsWrap.style.display = 'block';
     } else {
       flavorsWrap.style.display = 'none';
@@ -1932,12 +1975,19 @@
 
     document.getElementById('product-modal').classList.add('active');
   }
+
+  function selectFlavor(flavor, el) {
+    currentFlavor = flavor;
+    document.querySelectorAll('#pm-flavors .flavor-chip').forEach(c => c.classList.remove('selected'));
+    if (el) el.classList.add('selected');
+  }
+
   function closeProduct() {
     document.getElementById('product-modal').classList.remove('active');
   }
   function addCurrentProductToCart() {
     if (currentProductId) {
-      addProductToCart(currentProductId);
+      addProductToCart(currentProductId, currentFlavor);
       closeProduct();
     }
   }
