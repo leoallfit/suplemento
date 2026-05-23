@@ -3187,19 +3187,22 @@
     const labels = { proteinas:'Proteínas', creatinas:'Creatinas', preentreno:'Pre-Entreno',
       vitaminas:'Vitaminas', quemadores:'Quemadores', recuperacion:'Recuperación',
       volumen:'Volumen', accesorios:'Accesorios' };
-    grid.innerHTML = CAT_DISPLAY.map(cat => {
-      const coverSrc = catImgs[cat];
-      if (coverSrc) {
-        return `<div class="category has-cover" onclick="filterCategory('${cat}')">
-          <img class="cat-cover-img" src="${coverSrc}" alt="${labels[cat]}">
-          <div class="category-label"><h3>${labels[cat]}</h3></div>
+    const activeProds = PRODUCTS.filter(p => !p.archived);
+    grid.innerHTML = CAT_DISPLAY
+      .filter(cat => activeProds.some(p => p.category === cat))
+      .map(cat => {
+        const coverSrc = catImgs[cat];
+        if (coverSrc) {
+          return `<div class="category has-cover" onclick="filterCategory('${cat}')">
+            <img class="cat-cover-img" src="${coverSrc}" alt="${labels[cat]}">
+            <div class="category-label"><h3>${labels[cat]}</h3></div>
+          </div>`;
+        }
+        return `<div class="category" onclick="filterCategory('${cat}')">
+          <div class="category-icon">${ICONS[cat]||'&#128170;'}</div>
+          <h3>${labels[cat]}</h3>
         </div>`;
-      }
-      return `<div class="category" onclick="filterCategory('${cat}')">
-        <div class="category-icon">${ICONS[cat]||'&#128170;'}</div>
-        <h3>${labels[cat]}</h3>
-      </div>`;
-    }).join('');
+      }).join('');
   }
 
   // ---------- Portadas de categorías (admin) ----------
