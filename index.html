@@ -2182,6 +2182,17 @@
       <div class="editor-grid" id="editor-grid"></div>
     </div>
 
+    <!-- Archivados -->
+    <div class="admin-section" id="archived-section" style="padding:24px;display:none;">
+      <div class="editor-toolbar">
+        <h2>Archivados (<span id="archived-count">0</span>)</h2>
+      </div>
+      <p style="color:#888;font-size:13px;margin-bottom:12px;">
+        Estos productos no se muestran en la tienda. Pod&#233;s restaurarlos o eliminarlos definitivamente.
+      </p>
+      <div id="archived-grid"></div>
+    </div>
+
     <div class="admin-section" style="padding:24px;">
       <div class="editor-toolbar">
         <h2>Combos</h2>
@@ -2704,7 +2715,7 @@
 
   function renderProducts() {
     const grid = document.getElementById('products-grid');
-    grid.innerHTML = PRODUCTS.map(p => `
+    grid.innerHTML = PRODUCTS.filter(p => !p.archived).map(p => `
       <div class="product" data-id="${p.id}" data-category="${p.category}" data-name="${p.name}" onclick="openProduct(${p.id})">
         <div class="product-image" style="${p.image ? 'padding:0;overflow:hidden;' : ''}">
           ${imgFor(p)}
@@ -2891,7 +2902,7 @@
     document.querySelectorAll('.product').forEach(card => {
       const id = parseInt(card.dataset.id);
       const p = PRODUCTS.find(x => x.id === id);
-      if (!p) { card.style.display = 'none'; return; }
+      if (!p || p.archived) { card.style.display = 'none'; return; }
 
       // Filtro activo (categoría o marca)
       let passesFilter = true;
@@ -2938,7 +2949,7 @@
   function renderMarcas() {
     const el = document.getElementById('marcas-carousel');
     if (!el) return;
-    const brands = [...new Set(PRODUCTS.map(p => p.brand).filter(Boolean))].sort();
+    const brands = [...new Set(PRODUCTS.filter(p => !p.archived).map(p => p.brand).filter(Boolean))].sort();
     el.innerHTML = brands.map(b => {
       const logo = BRAND_LOGOS[b];
       const safe = b.replace(/'/g, "\\'");
@@ -3368,6 +3379,7 @@
       document.getElementById('admin-panel').classList.add('active');
       document.body.style.overflow = 'hidden';
       renderProductEditor();
+      renderArchivedEditor();
       renderCombosEditor();
       renderBrandsEditor();
       updateTokenUI();
@@ -3547,7 +3559,7 @@
     currentComboTargetId = comboId;
     const list = document.getElementById('combo-picker-list');
     // Mostrar productos que NO sean combos
-    const items = PRODUCTS.filter(p => p.category !== 'combos');
+    const items = PRODUCTS.filter(p => p.category !== 'combos' && !p.archived);
     if (items.length === 0) {
       list.innerHTML = '<p style="color:#666;">No hay productos para agregar.</p>';
     } else {
@@ -3696,8 +3708,7 @@
             ${CATEGORIES.map(c => `<option value="${c}" ${c === p.category ? 'selected' : ''}>${CAT_LABELS[c]}</option>`).join('')}
           </select>
           <div class="editor-actions">
-            ${p.image ? `<button class="editor-btn" onclick="removeImage(${p.id})">Quitar foto</button>` : ''}
-            <button class="editor-btn danger" onclick="deleteProduct(${p.id})">Eliminar</button>
+            <button class="editor-btn" style="background:#b45309;border-color:#b45309;color:#fff;" onclick="archiveProduct(${p.id})">Archivar</button>
           </div>
         </div>
       </div>
@@ -3764,15 +3775,58 @@
   }
   function removeImage(id) { removeProductImage(id, 0); toast('Foto eliminada'); }
 
+  function archiveProduct(id) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    p.archived = true;
+    saveProducts();
+    renderProducts(); renderProductEditor(); renderArchivedEditor();
+    renderMarcas(); renderCombosEditor();
+    toast('"' + p.name + '" archivado', 'success');
+  }
+  function restoreProduct(id) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    p.archived = false;
+    saveProducts();
+    renderProducts(); renderProductEditor(); renderArchivedEditor();
+    renderMarcas();
+    toast('"' + p.name + '" restaurado', 'success');
+  }
+  function renderArchivedEditor() {
+    const el = document.getElementById('archived-grid');
+    if (!el) return;
+    const archived = PRODUCTS.filter(p => p.archived);
+    const countEl = document.getElementById('archived-count');
+    if (countEl) countEl.textContent = archived.length;
+    const section = document.getElementById('archived-section');
+    if (section) section.style.display = archived.length ? 'block' : 'none';
+    if (!archived.length) { el.innerHTML = ''; return; }
+    el.innerHTML = archived.map(p => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #1a1a1a;">
+        <div style="width:48px;height:48px;background:#f0f0f0;flex-shrink:0;overflow:hidden;border-radius:2px;">
+          ${imgFor(p)}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.name)}</div>
+          <div style="font-size:11px;color:#888;">${esc(p.brand)} · ${CAT_LABELS[p.category]||p.category}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button class="editor-btn" style="background:#0066ff;border-color:#0066ff;color:#fff;" onclick="restoreProduct(${p.id})">Restaurar</button>
+          <button class="editor-btn danger" onclick="deleteProduct(${p.id})">Eliminar</button>
+        </div>
+      </div>`).join('');
+  }
+
   function deleteProduct(id) {
     const p = PRODUCTS.find(x => x.id === id);
     if (!p) return;
-    if (!confirm('¿Eliminar "' + p.name + '"?')) return;
+    if (!confirm('¿Eliminar "' + p.name + '" definitivamente? Esta acción no se puede deshacer.')) return;
     const idx = PRODUCTS.findIndex(x => x.id === id);
     PRODUCTS.splice(idx, 1);
     saveProducts();
     renderProducts();
-    renderProductEditor();
+    renderProductEditor(); renderArchivedEditor();
     renderCombosEditor();
     toast('Producto eliminado');
   }
