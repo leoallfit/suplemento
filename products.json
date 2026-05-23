@@ -1,5 +1,17 @@
 [
   {
+    "id": 18,
+    "name": "Nuevo producto",
+    "brand": "SupleFit",
+    "price": 0,
+    "sizes": [],
+    "shortdesc": "",
+    "flavors": [],
+    "nutrition": [],
+    "desc": "",
+    "category": "proteinas"
+  },
+  {
     "id": 1,
     "name": "Proteína Hoch",
     "brand": "Hoch",
