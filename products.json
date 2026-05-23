@@ -507,7 +507,8 @@
     "desc": "Máxima absorción. Ideal para recuperación nocturna y calidad del sueño.",
     "category": "recuperacion",
     "images": [],
-    "sizes": []
+    "sizes": [],
+    "archived": true
   },
   {
     "id": 17,
@@ -533,6 +534,7 @@
     "desc": "Reduce inflamación mejora salud cardiovascular y función cognitiva.",
     "category": "recuperacion",
     "images": [],
-    "sizes": []
+    "sizes": [],
+    "archived": true
   }
 ]
