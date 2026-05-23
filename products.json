@@ -133,41 +133,6 @@
     "sizes": []
   },
   {
-    "id": 4,
-    "name": "Pre-Entreno V8",
-    "brand": "Star Nutrition",
-    "price": 38300,
-    "shortdesc": "Energía foco y bomba muscular",
-    "flavors": [
-      "Sandía",
-      "Limón",
-      "Tropical",
-      "Frutos rojos"
-    ],
-    "nutrition": [
-      [
-        "Cafeína",
-        "200mg"
-      ],
-      [
-        "Beta-Alanina",
-        "3.2g"
-      ],
-      [
-        "Creatina",
-        "2g"
-      ],
-      [
-        "Citrulina",
-        "4g"
-      ]
-    ],
-    "desc": "Fórmula de alto rendimiento para entrenamientos intensos. Activa a los 20 min.",
-    "category": "preentreno",
-    "images": [],
-    "sizes": []
-  },
-  {
     "id": 5,
     "name": "Creatina Star",
     "brand": "Star Nutrition",
