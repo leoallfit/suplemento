@@ -1,5 +1,18 @@
 [
   {
+    "id": 19,
+    "name": "Nuevo Combo",
+    "brand": "SupleFit",
+    "price": 0,
+    "size": "Pack",
+    "shortdesc": "",
+    "flavors": [],
+    "nutrition": [],
+    "desc": "",
+    "category": "combos",
+    "combo_items": []
+  },
+  {
     "id": 18,
     "name": "Testo High ",
     "brand": "Hoch Sport",
