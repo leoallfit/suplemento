@@ -2036,7 +2036,7 @@
       </button>
       <div class="menu-sub" id="menu-supps-list"></div>
     </div>
-    <a class="menu-link" onclick="filterCategory('combos');closeMenu();">Combos</a>
+    <a class="menu-link" id="menu-combos-link" onclick="filterCategory('combos');closeMenu();">Combos</a>
   </div>
 </aside>
 
@@ -3089,16 +3089,29 @@
     sec.classList.toggle('open');
   }
   function populateMenu() {
-    // Marcas únicas
-    const brands = [...new Set(PRODUCTS.map(p => p.brand).filter(Boolean))].sort();
-    document.getElementById('menu-brands-list').innerHTML = brands.map(b =>
-      `<a onclick="filterBrand('${b.replace(/'/g, "\\'")}');">${b}</a>`
+    const activeProds = PRODUCTS.filter(p => !p.archived);
+
+    // Marcas con al menos un producto activo
+    const brands = [...new Set(activeProds.map(p => p.brand).filter(Boolean))].sort();
+    const brandsEl = document.getElementById('menu-brands-list');
+    const brandsSec = document.getElementById('menu-sec-brands');
+    if (brandsEl) brandsEl.innerHTML = brands.map(b =>
+      `<a onclick="filterBrand('${b.replace(/'/g, "\\'")}');closeMenu();">${b}</a>`
     ).join('');
-    // Categorías (excluyendo combos que va aparte)
-    const cats = CATEGORIES.filter(c => c !== 'combos');
-    document.getElementById('menu-supps-list').innerHTML = cats.map(c =>
+    if (brandsSec) brandsSec.style.display = brands.length ? '' : 'none';
+
+    // Categorías con al menos un producto activo (sin combos, que van aparte)
+    const activeCats = CATEGORIES.filter(c => c !== 'combos' && activeProds.some(p => p.category === c));
+    const suppsEl = document.getElementById('menu-supps-list');
+    const suppsSec = document.getElementById('menu-sec-supps');
+    if (suppsEl) suppsEl.innerHTML = activeCats.map(c =>
       `<a onclick="filterCategory('${c}');closeMenu();">${CAT_LABELS[c] || c}</a>`
     ).join('');
+    if (suppsSec) suppsSec.style.display = activeCats.length ? '' : 'none';
+
+    // Combos: solo visible si hay combos activos
+    const combosLink = document.getElementById('menu-combos-link');
+    if (combosLink) combosLink.style.display = activeProds.some(p => p.category === 'combos') ? '' : 'none';
   }
 
   function clearFilter() {
