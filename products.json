@@ -366,7 +366,9 @@
     "desc": "Refuerza tejidos conectivos cartílagos y mejora la salud de la piel.",
     "category": "recuperacion",
     "images": [],
-    "sizes": [],
+    "sizes": [
+      "210 g"
+    ],
     "archived": true
   },
   {
