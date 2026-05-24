@@ -3864,6 +3864,7 @@
       // Categoría puede convertir un producto a/desde combo
       renderCombosEditor();
     }
+    if (field === 'category') renderCategories();
     toast('Cambios guardados', 'success');
   }
 
@@ -3916,7 +3917,7 @@
     p.archived = true;
     saveProducts();
     renderProducts(); renderProductEditor(); renderArchivedEditor();
-    renderMarcas(); renderCombosEditor();
+    renderMarcas(); renderCombosEditor(); renderCategories();
     toast('"' + p.name + '" archivado', 'success');
   }
   function restoreProduct(id) {
@@ -3925,7 +3926,7 @@
     p.archived = false;
     saveProducts();
     renderProducts(); renderProductEditor(); renderArchivedEditor();
-    renderMarcas();
+    renderMarcas(); renderCategories();
     toast('"' + p.name + '" restaurado', 'success');
   }
   function renderArchivedEditor() {
@@ -3962,7 +3963,7 @@
     saveProducts();
     renderProducts();
     renderProductEditor(); renderArchivedEditor();
-    renderCombosEditor();
+    renderCombosEditor(); renderCategories(); renderMarcas();
     toast('Producto eliminado');
   }
 
@@ -4005,6 +4006,7 @@
     saveProducts();
     renderProducts();
     renderProductEditor();
+    renderCategories(); renderMarcas();
     toast('Producto añadido', 'success');
     pushProductToSheet(newProd); // sincroniza con Google Sheets (no toca Precio Lista)
   }
