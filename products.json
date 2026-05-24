@@ -1,5 +1,18 @@
 [
   {
+    "id": 20,
+    "name": "Nuevo Combo",
+    "brand": "SupleFit",
+    "price": 0,
+    "size": "Pack",
+    "shortdesc": "",
+    "flavors": [],
+    "nutrition": [],
+    "desc": "",
+    "category": "combos",
+    "combo_items": []
+  },
+  {
     "id": 19,
     "name": "Whey Protein + Creatina 300g Star nutrition ",
     "brand": "SupleFit",
