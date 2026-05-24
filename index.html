@@ -3689,6 +3689,13 @@
     saveProducts();
   }
 
+  function getBrandOptions(selected) {
+    const fromProds = PRODUCTS.map(p => p.brand).filter(Boolean);
+    const fromLogos = Object.keys(BRAND_LOGOS);
+    const brands = [...new Set([...fromProds, ...fromLogos])].sort();
+    return brands.map(b => `<option value="${esc(b)}" ${b === selected ? 'selected' : ''} style="color:#fff;">${esc(b)}</option>`).join('');
+  }
+
   function renderBrandsEditor() {
     const el = document.getElementById('brands-editor');
     if (!el) return;
@@ -3812,7 +3819,11 @@
         <div class="editor-fields">
           <input type="text" value="${esc(p.name)}" placeholder="Nombre" onchange="updateProduct(${p.id}, 'name', this.value)">
           <div class="editor-row">
-            <input type="text" value="${esc(p.brand)}" placeholder="Marca" onchange="updateProduct(${p.id}, 'brand', this.value)">
+            <select onchange="updateProduct(${p.id}, 'brand', this.value)"
+              style="background:#1a1a1a;border:1px solid #2a2a2a;color:${p.brand?'#fff':'#666'};padding:8px 10px;font-size:13px;font-family:inherit;outline:none;flex:1;min-width:0;cursor:pointer;">
+              <option value="" ${!p.brand?'selected':''} style="color:#666;">— Marca —</option>
+              ${getBrandOptions(p.brand)}
+            </select>
             <input type="number" value="${p.price}" placeholder="Precio" onchange="updateProduct(${p.id}, 'price', parseFloat(this.value)||0)">
           </div>
           <div style="background:#111;border:1px solid #2a2a2a;padding:8px 10px;">
