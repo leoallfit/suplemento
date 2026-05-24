@@ -2951,7 +2951,7 @@
     if (cart.length === 0) return;
     const lines = cart.map(i => `• ${i.name}${i.flavor ? ' (' + i.flavor + ')' : ''} x${i.qty} — ${formatPrice(i.price * i.qty)}`);
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const msg = `Hola SUPLEFIT! Quiero hacer este pedido:\n\n${lines.join('\n')}\n\n*Total: ${formatPrice(total)}*`;
+    const msg = `Hola Leo! Quiero hacer este pedido:\n\n${lines.join('\n')}\n\n*Total: ${formatPrice(total)}*`;
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
     toast('Abriendo WhatsApp...', 'success');
