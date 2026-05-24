@@ -513,9 +513,18 @@
   }
   .product-old-price {
     font-size: 12px;
-    color: #666;
+    color: #888;
     text-decoration: line-through;
-    margin-right: 6px;
+    display: block;
+    line-height: 1.2;
+    margin-bottom: 1px;
+  }
+  .pm-old-price {
+    font-size: 15px;
+    color: #888;
+    text-decoration: line-through;
+    display: block;
+    margin-bottom: 2px;
   }
   .add-cart {
     background: #0066ff;
@@ -2068,6 +2077,7 @@
       <div class="product-modal-info">
         <div class="brand" id="pm-brand">Fit</div>
         <h3 id="pm-name"></h3>
+        <div id="pm-old-price" style="display:none;"></div>
         <div class="price" id="pm-price"></div>
         <p class="shortdesc" id="pm-shortdesc" style="color:#aaa; font-size:14px; margin-top:4px;"></p>
       </div>
@@ -2807,7 +2817,10 @@
           <div class="product-name">${p.name}</div>
           <div class="product-shortdesc">${p.shortdesc}</div>
           <div class="product-footer">
-            <span class="product-price">${formatPrice(p.price)}</span>
+            <div>
+              ${p.original_price > 0 ? `<span class="product-old-price">${formatPrice(p.original_price)}</span>` : ''}
+              <span class="product-price">${formatPrice(p.price)}</span>
+            </div>
             <button class="add-cart" onclick="event.stopPropagation();quickAdd(${p.id})">+ Añadir</button>
           </div>
         </div>
@@ -3123,6 +3136,16 @@
     document.getElementById('pm-brand').textContent = p.brand;
     document.getElementById('pm-name').textContent = p.name;
     document.getElementById('pm-price').textContent = formatPrice(p.price);
+    const oldPriceEl = document.getElementById('pm-old-price');
+    if (oldPriceEl) {
+      if (p.original_price > 0) {
+        oldPriceEl.textContent = formatPrice(p.original_price);
+        oldPriceEl.className = 'pm-old-price';
+        oldPriceEl.style.display = 'block';
+      } else {
+        oldPriceEl.style.display = 'none';
+      }
+    }
     document.getElementById('pm-shortdesc').textContent = p.shortdesc || '';
     // Descripción larga (desplegable)
     const descWrap = document.getElementById('pm-desc-wrap');
@@ -3824,7 +3847,8 @@
               <option value="" ${!p.brand?'selected':''} style="color:#666;">— Marca —</option>
               ${getBrandOptions(p.brand)}
             </select>
-            <input type="number" value="${p.price}" placeholder="Precio" onchange="updateProduct(${p.id}, 'price', parseFloat(this.value)||0)">
+            <input type="number" value="${p.price}" placeholder="Precio venta" onchange="updateProduct(${p.id}, 'price', parseFloat(this.value)||0)">
+            <input type="number" value="${p.original_price||''}" placeholder="Precio tachado" title="Precio original (se muestra tachado encima del precio de venta)" onchange="updateProduct(${p.id}, 'original_price', parseFloat(this.value)||0)" style="border-color:#555;">
           </div>
           <div style="background:#111;border:1px solid #2a2a2a;padding:8px 10px;">
             <div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Presentaciones (kg / g / caps / unid)</div>
