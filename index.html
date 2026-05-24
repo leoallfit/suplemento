@@ -3692,12 +3692,20 @@
   function renderBrandsEditor() {
     const el = document.getElementById('brands-editor');
     if (!el) return;
-    const brands = [...new Set(PRODUCTS.map(p => p.brand).filter(Boolean))].sort();
+    // Merge marcas de productos + las guardadas en BRAND_LOGOS
+    const fromProds = PRODUCTS.map(p => p.brand).filter(Boolean);
+    const fromLogos = Object.keys(BRAND_LOGOS);
+    const brands = [...new Set([...fromProds, ...fromLogos])].sort();
+    const addForm = `<div style="display:flex;gap:8px;margin-bottom:16px;">
+      <input type="text" id="new-brand-input" placeholder="Nombre de la marca"
+        style="flex:1;min-width:0;background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;border-radius:3px;">
+      <button class="btn" onclick="addBrand()">+ Agregar</button>
+    </div>`;
     if (brands.length === 0) {
-      el.innerHTML = '<p style="color:#666;font-size:13px;">No hay marcas. Agregá productos con marca en el editor de arriba.</p>';
+      el.innerHTML = addForm + '<p style="color:#666;font-size:13px;">No hay marcas todavía.</p>';
       return;
     }
-    el.innerHTML = brands.map(b => {
+    el.innerHTML = addForm + brands.map(b => {
       const safeId = b.replace(/[^a-zA-Z0-9]/g, '_');
       const logo = BRAND_LOGOS[b];
       const safe = b.replace(/'/g, "\\'");
@@ -3713,11 +3721,43 @@
           </div>
           <div class="brand-edit-name">${esc(b)}</div>
           <div class="brand-edit-actions">
-            ${logo ? `<button class="editor-btn danger" onclick="removeBrandLogo('${safe}')">Quitar</button>` : ''}
+            ${logo ? `<button class="editor-btn danger" onclick="removeBrandLogo('${safe}')">Quitar logo</button>` : ''}
+            <button class="editor-btn danger" onclick="deleteBrand('${safe}')">Eliminar</button>
           </div>
         </div>
       `;
     }).join('');
+  }
+
+  function addBrand() {
+    const input = document.getElementById('new-brand-input');
+    const name = (input?.value || '').trim();
+    if (!name) { toast('Escribí el nombre de la marca', 'error'); return; }
+    const exists = Object.keys(BRAND_LOGOS).some(k => k.toLowerCase() === name.toLowerCase())
+                || PRODUCTS.some(p => p.brand && p.brand.toLowerCase() === name.toLowerCase());
+    if (exists) { toast('Esa marca ya existe', 'error'); return; }
+    BRAND_LOGOS[name] = '';
+    saveBrands();
+    renderMarcas();
+    renderBrandsEditor();
+    if (input) input.value = '';
+    toast('Marca "' + name + '" agregada', 'success');
+  }
+
+  function deleteBrand(brand) {
+    const count = PRODUCTS.filter(p => p.brand === brand).length;
+    const msg = count > 0
+      ? '¿Eliminar marca "' + brand + '"? Se quitará de ' + count + ' producto' + (count > 1 ? 's' : '') + '.'
+      : '¿Eliminar marca "' + brand + '"?';
+    if (!confirm(msg)) return;
+    delete BRAND_LOGOS[brand];
+    PRODUCTS.forEach(p => { if (p.brand === brand) p.brand = ''; });
+    saveBrands();
+    saveProducts();
+    renderMarcas();
+    renderBrandsEditor();
+    renderProductEditor();
+    toast('Marca "' + brand + '" eliminada', 'success');
   }
 
   function handleBrandLogoUpload(brand, input) {
@@ -3740,11 +3780,11 @@
 
   function removeBrandLogo(brand) {
     if (!confirm('¿Quitar logo de "' + brand + '"?')) return;
-    delete BRAND_LOGOS[brand];
+    BRAND_LOGOS[brand] = ''; // mantiene la marca, solo quita el logo
     saveBrands();
     renderMarcas();
     renderBrandsEditor();
-    toast('Logo eliminado');
+    toast('Logo de "' + brand + '" quitado');
   }
 
   function renderProductEditor() {
