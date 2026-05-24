@@ -920,6 +920,29 @@
   }
   .toast.success { border-left-color: #4ade80; }
   .toast.error { border-left-color: #ff4757; }
+  .toast-cart {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-left: 3px solid #4ade80;
+    padding: 12px 16px;
+    color: #fff;
+    min-width: 240px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    animation: toastIn 0.25s ease;
+    pointer-events: all;
+  }
+  .toast-cart-label { font-size: 12px; color: #aaa; margin-bottom: 4px; }
+  .toast-cart-name { font-size: 14px; font-weight: 700; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .toast-cart-btn {
+    display: block; width: 100%; padding: 8px 0; background: #0066ff;
+    color: #fff; border: none; font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;
+  }
+  .toast-cart-bar {
+    height: 2px; background: #0066ff; margin-top: 10px;
+    animation: toastBarShrink 5s linear forwards;
+  }
+  @keyframes toastBarShrink { from { width: 100%; } to { width: 0%; } }
   @keyframes toastIn {
     from { transform: translateX(120%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
@@ -2891,7 +2914,34 @@
     refreshCart();
     const suffix = [flavor, size].filter(Boolean).join(' · ');
     const label = suffix ? `${p.name} (${suffix})` : p.name;
-    toast('A&#241;adido: ' + label, 'success');
+    toastCart(label);
+  }
+
+  let _toastCartTimer = null;
+  function toastCart(productName) {
+    // Eliminar toast anterior si existe
+    const prev = document.getElementById('toast-cart-el');
+    if (prev) prev.remove();
+    if (_toastCartTimer) clearTimeout(_toastCartTimer);
+
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.id = 'toast-cart-el';
+    t.className = 'toast-cart';
+    t.innerHTML = `
+      <div class="toast-cart-label">&#10003; Añadido al carrito</div>
+      <div class="toast-cart-name">${productName}</div>
+      <button class="toast-cart-btn" onclick="openCart();this.closest('#toast-cart-el').remove();">Ver carrito</button>
+      <div class="toast-cart-bar"></div>
+    `;
+    c.appendChild(t);
+
+    _toastCartTimer = setTimeout(() => {
+      t.style.transition = 'opacity 0.3s, transform 0.3s';
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(120%)';
+      setTimeout(() => t.remove(), 300);
+    }, 5000);
   }
 
   function refreshCart() {
