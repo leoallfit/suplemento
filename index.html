@@ -3260,14 +3260,14 @@
   }
 
   // ---------- Categorías dinámicas ----------
-  const CAT_DISPLAY = ['proteinas','creatinas','preentreno','vitaminas','quemadores','recuperacion','volumen','accesorios'];
+  const CAT_DISPLAY = ['proteinas','creatinas','preentreno','vitaminas','quemadores','recuperacion','volumen','accesorios','combos'];
   function renderCategories() {
     const grid = document.getElementById('categories-grid');
     if (!grid) return;
     const catImgs = (SITE_CONFIG && SITE_CONFIG.category_images) || {};
     const labels = { proteinas:'Proteínas', creatinas:'Creatinas', preentreno:'Pre-Entreno',
       vitaminas:'Vitaminas', quemadores:'Quemadores', recuperacion:'Recuperación',
-      volumen:'Volumen', accesorios:'Accesorios' };
+      volumen:'Volumen', accesorios:'Accesorios', combos:'Combos' };
     const activeProds = PRODUCTS.filter(p => !p.archived);
     grid.innerHTML = CAT_DISPLAY
       .filter(cat => activeProds.some(p => p.category === cat))
