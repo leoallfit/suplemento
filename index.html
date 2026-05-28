@@ -1825,9 +1825,52 @@
     .product-price { font-size: 13px; }
     .add-cart { font-size: 8px; padding: 5px 3px; }
   }
+  /* Mantenimiento */
+  #maintenance-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 99999;
+    background: #080808;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 40px 24px;
+  }
+  #maintenance-overlay.active { display: flex; }
+  .maint-icon { font-size: 56px; margin-bottom: 24px; animation: maintSpin 3s linear infinite; display: inline-block; }
+  @keyframes maintSpin { 0%,100%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} }
+  .maint-brand { font-size: 11px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #555; margin-bottom: 32px; }
+  .maint-title { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 12px; line-height: 1.2; }
+  .maint-sub { font-size: 15px; color: #666; margin-bottom: 40px; line-height: 1.6; max-width: 320px; }
+  .maint-wa { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: #fff;
+    padding: 14px 28px; font-size: 14px; font-weight: 700; text-decoration: none; letter-spacing: 0.5px;
+    transition: opacity 0.2s; }
+  .maint-wa:hover { opacity: 0.85; }
+  /* Banner admin mantenimiento activo */
+  #maint-admin-banner {
+    display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    background: #f97316; color: #000; text-align: center;
+    padding: 8px 16px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  }
+  #maint-admin-banner.active { display: block; }
 </style>
 </head>
 <body>
+
+<!-- Overlay de mantenimiento (visible para visitantes cuando está activo) -->
+<div id="maintenance-overlay">
+  <div class="maint-brand">SUPLEFIT</div>
+  <div class="maint-icon">🔧</div>
+  <div class="maint-title">Estamos en mantenimiento</div>
+  <div class="maint-sub">Estamos actualizando la tienda.<br>¡Volvemos en unos minutos!</div>
+  <a class="maint-wa" href="https://wa.me/5493515146361" target="_blank">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.828L.057 23.5l5.82-1.527A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.375l-.36-.214-3.714.974.99-3.623-.236-.373A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+    Consultame por WhatsApp
+  </a>
+</div>
+
+<!-- Banner naranja para el admin cuando mantenimiento está activo -->
+<div id="maint-admin-banner">
+  🔧 MODO MANTENIMIENTO ACTIVO — Los visitantes ven el cartel, vos ves la tienda normal. <button onclick="toggleMaintenance()" style="margin-left:12px;background:#000;color:#f97316;border:none;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;">Desactivar</button>
+</div>
 
 <header>
   <div class="header-inner">
@@ -2238,6 +2281,21 @@
     <button class="admin-logout" onclick="logout()">Cerrar sesión</button>
   </div>
   <div class="admin-body">
+
+    <!-- MODO MANTENIMIENTO -->
+    <div class="admin-section" style="padding:24px;">
+      <div class="editor-toolbar">
+        <h2>Modo Mantenimiento</h2>
+        <span id="maint-status-badge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:#1a1a1a;color:#666;">● Desactivado</span>
+      </div>
+      <p style="color:#888;font-size:13px;margin-bottom:18px;">
+        Cuando est&#225; activo, los visitantes ven un cartel de mantenimiento en lugar de la tienda. Vos seguís viendo todo normal desde acá.
+      </p>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <button id="maint-toggle-btn" class="btn" onclick="toggleMaintenance()" style="min-width:200px;">🔧 Activar mantenimiento</button>
+        <span style="font-size:12px;color:#555;">Los cambios se guardan en GitHub y aplican a todos los visitantes al instante.</span>
+      </div>
+    </div>
 
     <div class="admin-section" style="padding:24px;">
       <div class="editor-toolbar">
@@ -2990,6 +3048,7 @@
     if (typeof renderProducts   === 'function') renderProducts();
     if (typeof renderMarcas     === 'function') renderMarcas();
     if (typeof refreshCart      === 'function') refreshCart();
+    if (typeof checkMaintenanceMode === 'function') checkMaintenanceMode();
     await applySheetPrices();
   })();
 
@@ -3627,6 +3686,38 @@
         </div>
       `).join('') + '</div>';
   }
+  function checkMaintenanceMode() {
+    const isMaint = !!SITE_CONFIG.maintenance_mode;
+    const isAdmin = !!getToken();
+    const overlay = document.getElementById('maintenance-overlay');
+    const banner  = document.getElementById('maint-admin-banner');
+    const badge   = document.getElementById('maint-status-badge');
+    const btn     = document.getElementById('maint-toggle-btn');
+    if (overlay) overlay.classList.toggle('active', isMaint && !isAdmin);
+    if (banner)  banner.classList.toggle('active', isMaint && isAdmin);
+    if (badge) {
+      badge.textContent = isMaint ? '● Activo' : '● Desactivado';
+      badge.style.color = isMaint ? '#f97316' : '#666';
+      badge.style.background = isMaint ? 'rgba(249,115,22,0.1)' : '#1a1a1a';
+    }
+    if (btn) {
+      btn.textContent = isMaint ? '✅ Desactivar mantenimiento' : '🔧 Activar mantenimiento';
+      btn.style.background = isMaint ? '#1a1a1a' : '#f97316';
+      btn.style.color = isMaint ? '#ccc' : '#000';
+      btn.style.border = isMaint ? '2px solid #2a2a2a' : 'none';
+    }
+  }
+  async function toggleMaintenance() {
+    SITE_CONFIG.maintenance_mode = !SITE_CONFIG.maintenance_mode;
+    try { localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(SITE_CONFIG)); } catch(e) {}
+    checkMaintenanceMode();
+    if (getToken()) {
+      toast('Guardando…');
+      await pushSiteConfig('config: ' + (SITE_CONFIG.maintenance_mode ? 'enable' : 'disable') + ' maintenance mode');
+    } else {
+      toast(SITE_CONFIG.maintenance_mode ? 'Mantenimiento activado (solo local — conectá GitHub para todos)' : 'Mantenimiento desactivado', 'success');
+    }
+  }
   async function pushSiteConfig(msg) {
     if (!getToken()) return;
     try {
@@ -3760,6 +3851,7 @@
       if (sheetInput) sheetInput.value = SITE_CONFIG.sheets_url || '';
       updateSheetStatus(SITE_CONFIG.sheets_url ? 'ok' : 'idle');
       renderCatCoversEditor();
+      checkMaintenanceMode();
     } else {
       document.getElementById('pwd-error').textContent = 'Clave incorrecta';
       document.getElementById('pwd-input').value = '';
