@@ -2469,6 +2469,8 @@
           <div id="sheets-test-status" style="font-size:12px;color:#888;margin-top:6px;min-height:18px;"></div>
           <div style="color:#666;font-size:11px;margin-top:8px;">&#9432; Cada vez que modific&#225;s el Precio Venta en Sheets, la p&#225;gina lo muestra autom&#225;ticamente al recargar. El Precio Lista y Ganancia son s&#243;lo para vos.</div>
           <button class="editor-btn" style="margin-top:14px;" onclick="showSheetsDiag()">&#128269; Ver coincidencias Sheets ↔ Web</button>
+          <button class="editor-btn" style="margin-top:8px;background:rgba(74,222,128,0.08);border-color:#4ade80;color:#4ade80;" onclick="testCRM()">&#9993; Probar CRM (pedido de prueba)</button>
+          <div id="crm-test-result" style="display:none;margin-top:10px;font-size:12px;padding:10px 12px;background:#0a0a0a;border:1px solid #222;border-radius:4px;font-family:monospace;white-space:pre-wrap;line-height:1.6;"></div>
           <div id="sheets-diag" style="display:none;margin-top:14px;"></div>
         </div>
       </div>
@@ -3264,8 +3266,53 @@
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         if (data.ok) toast('Pedido ' + (data.orderId||'') + ' guardado en Sheets ✓', 'success');
+        else toast('CRM: respuesta inesperada del servidor', 'error');
+      } else {
+        toast('CRM: error HTTP ' + res.status, 'error');
       }
-    } catch(e) { console.warn('CRM:', e.message); }
+    } catch(e) {
+      console.warn('CRM:', e.message);
+      toast('CRM no disponible: ' + e.message, 'error');
+    }
+  }
+
+  async function testCRM() {
+    const url = SITE_CONFIG.sheets_url;
+    const box = document.getElementById('crm-test-result');
+    if (!box) return;
+    if (!url) {
+      box.style.display = '';
+      box.style.color = '#f87171';
+      box.textContent = '✗ No hay URL de Sheets configurada.';
+      return;
+    }
+    box.style.display = '';
+    box.style.color = '#888';
+    box.textContent = 'Enviando pedido de prueba…';
+    try {
+      const params = new URLSearchParams({
+        action: 'newOrder',
+        items: '1x Producto de prueba',
+        total: '$99.999',
+        cliente: 'TEST ADMIN'
+      });
+      const fullUrl = url + '?' + params.toString();
+      box.textContent = '→ GET ' + fullUrl.substring(0, 80) + '…\n\nEsperando respuesta…';
+      const res = await fetch(fullUrl);
+      const text = await res.text();
+      let parsed = null;
+      try { parsed = JSON.parse(text); } catch(e) {}
+      if (parsed && parsed.ok) {
+        box.style.color = '#4ade80';
+        box.textContent = '✓ CRM funcionando correctamente\n\nRespuesta: ' + JSON.stringify(parsed, null, 2) + '\n\nFijate en la pestaña "Pedidos" de tu Sheets — debería haber una fila nueva con "TEST ADMIN".';
+      } else {
+        box.style.color = '#f87171';
+        box.textContent = '✗ Respuesta inesperada (HTTP ' + res.status + '):\n\n' + text.substring(0, 500) + '\n\n→ Probable causa: el código del Apps Script no está actualizado o no fue redeployado.';
+      }
+    } catch(e) {
+      box.style.color = '#f87171';
+      box.textContent = '✗ Error de red: ' + e.message + '\n\n→ Verificá que la URL del Apps Script sea correcta y que el acceso sea "Cualquiera".';
+    }
   }
 
   // ---------- Search ----------
