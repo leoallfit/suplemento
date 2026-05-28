@@ -2288,19 +2288,20 @@
     var p = ss.getSheetByName('Pedidos');
     if (!p) {
       p = ss.insertSheet('Pedidos');
-      p.appendRow(['# Pedido','Fecha','Hora','Productos','Total',
-                   'Estado','Cliente','Tel&#233;fono','Notas']);
+      p.appendRow(['# Pedido','Fecha','Cliente','Hora','Productos','Total',
+                   'Estado','Tel&#233;fono','Notas']);
       p.getRange(1,1,1,9).setFontWeight('bold')
         .setBackground('#1c4587').setFontColor('#ffffff');
-      p.setFrozenRows(1); p.setColumnWidth(4,350);
+      p.setFrozenRows(1); p.setColumnWidth(5,350);
     }
     var now = new Date(), tz = Session.getScriptTimeZone();
     var num = p.getLastRow();
     p.appendRow(['#'+num,
       Utilities.formatDate(now,tz,'dd/MM/yyyy'),
+      e.parameter.cliente||'',
       Utilities.formatDate(now,tz,'HH:mm'),
       e.parameter.items||'', e.parameter.total||'',
-      'Pendiente', e.parameter.cliente||'','','']);
+      'Pendiente','','']);
     return ContentService
       .createTextOutput(JSON.stringify({ok:true,orderId:'#'+num}))
       .setMimeType(ContentService.MimeType.JSON);
@@ -2622,16 +2623,17 @@
     var p = ss.getSheetByName('Pedidos');
     if (!p) {
       p = ss.insertSheet('Pedidos');
-      p.appendRow(['# Pedido','Fecha','Hora','Productos','Total','Estado','Cliente','Teléfono','Notas']);
+      p.appendRow(['# Pedido','Fecha','Cliente','Hora','Productos','Total','Estado','Teléfono','Notas']);
       p.getRange(1,1,1,9).setFontWeight('bold').setBackground('#1c4587').setFontColor('#ffffff');
-      p.setFrozenRows(1); p.setColumnWidth(4,350);
+      p.setFrozenRows(1); p.setColumnWidth(5,350);
     }
     var now = new Date(), tz = Session.getScriptTimeZone();
     var num = p.getLastRow();
     p.appendRow(['#'+num, Utilities.formatDate(now,tz,'dd/MM/yyyy'),
+      e.parameter.cliente||'',
       Utilities.formatDate(now,tz,'HH:mm'),
       e.parameter.items||'', e.parameter.total||'',
-      'Pendiente', e.parameter.cliente||'','','']);
+      'Pendiente','','']);
     return ContentService.createTextOutput(JSON.stringify({ok:true,orderId:'#'+num}))
       .setMimeType(ContentService.MimeType.JSON);
   }
