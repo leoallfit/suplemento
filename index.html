@@ -2410,6 +2410,8 @@
           </div>
           <div id="sheets-test-status" style="font-size:12px;color:#888;margin-top:6px;min-height:18px;"></div>
           <div style="color:#666;font-size:11px;margin-top:8px;">&#9432; Cada vez que modific&#225;s el Precio Venta en Sheets, la p&#225;gina lo muestra autom&#225;ticamente al recargar. El Precio Lista y Ganancia son s&#243;lo para vos.</div>
+          <button class="editor-btn" style="margin-top:14px;" onclick="showSheetsDiag()">&#128269; Ver coincidencias Sheets ↔ Web</button>
+          <div id="sheets-diag" style="display:none;margin-top:14px;"></div>
         </div>
       </div>
     </div>
@@ -2654,6 +2656,55 @@
       });
       if (changed) renderProducts();
     } catch(e) { console.warn('Sheets sync:', e.message); }
+  }
+  async function showSheetsDiag() {
+    const box = document.getElementById('sheets-diag');
+    if (!box) return;
+    const url = SITE_CONFIG.sheets_url;
+    if (!url) { box.style.display=''; box.innerHTML='<p style="color:#f87171;font-size:12px;">No hay URL de Sheets configurada.</p>'; return; }
+    box.style.display='';
+    box.innerHTML='<p style="color:#888;font-size:12px;">Cargando…</p>';
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const norm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+      let html = `<div style="font-size:11px;color:#888;margin-bottom:8px;">${data.length} filas en Sheets · ${PRODUCTS.filter(p=>!p.archived).length} productos activos en la web</div>`;
+      html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:#1a1a1a;color:#888;text-align:left;">
+          <th style="padding:6px 8px;border-bottom:1px solid #2a2a2a;">Nombre en Sheets</th>
+          <th style="padding:6px 8px;border-bottom:1px solid #2a2a2a;">Nombre en Web</th>
+          <th style="padding:6px 8px;border-bottom:1px solid #2a2a2a;">Match</th>
+          <th style="padding:6px 8px;border-bottom:1px solid #2a2a2a;">Precio Sheets</th>
+          <th style="padding:6px 8px;border-bottom:1px solid #2a2a2a;">Precio Web</th>
+        </tr></thead><tbody>`;
+      data.forEach(row => {
+        let p = PRODUCTS.find(x => x.id === parseInt(row.id));
+        let matchType = p ? '✅ ID' : '';
+        if (!p && row.name) {
+          const normRow = norm(row.name);
+          p = PRODUCTS.find(x => norm(x.name) === normRow);
+          if (p) matchType = '🟡 Nombre';
+        }
+        if (!p) matchType = '❌ Sin match';
+        const sheetPrice = row.sale_price !== '' && row.sale_price !== undefined ? formatPrice(parseFloat(row.sale_price)||0) : '—';
+        const webName = p ? esc(p.name) : '<span style="color:#666;">—</span>';
+        const webPrice = p ? formatPrice(p.price||0) : '—';
+        const rowBg = !p ? '#1a0a0a' : matchType.includes('Nombre') ? '#0d1a0d' : '';
+        html += `<tr style="border-bottom:1px solid #1a1a1a;${rowBg?'background:'+rowBg+';':''}">
+          <td style="padding:5px 8px;color:#ccc;">${esc(row.name||'')}<span style="color:#555;font-size:10px;"> (ID:${row.id})</span></td>
+          <td style="padding:5px 8px;color:#ccc;">${webName}${p?'<span style="color:#555;font-size:10px;"> (ID:'+p.id+')</span>':''}</td>
+          <td style="padding:5px 8px;">${matchType}</td>
+          <td style="padding:5px 8px;color:#4ade80;">${sheetPrice}</td>
+          <td style="padding:5px 8px;color:#60a5fa;">${webPrice}</td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+      html += `<p style="font-size:10px;color:#666;margin-top:8px;">🟡 Match por nombre = el ID en Sheets no coincide pero el nombre normalizó igual · ❌ = no se aplica ese precio</p>`;
+      box.innerHTML = html;
+    } catch(e) {
+      box.innerHTML = `<p style="color:#f87171;font-size:12px;">Error: ${e.message}</p>`;
+    }
   }
   function copySheetTemplate() {
     const rows = ['ID\tNombre\tPrecio Venta\tPrecio Lista\tGanancia $\tGanancia %'];
