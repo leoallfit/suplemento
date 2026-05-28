@@ -2081,6 +2081,13 @@
       <div style="font-weight:700;color:#fff;margin-bottom:4px;">&#128204; ¿Cómo comprar?</div>
       Al tocar el botón se abre WhatsApp con tu pedido listo. Charlamos, coordinamos el pago y el envío. ¡Simple y rápido!
     </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Tu nombre</label>
+      <input type="text" id="cart-customer-name" placeholder="Ej: María González" autocomplete="name"
+        style="width:100%;background:#1a1a1a;border:1px solid #333;color:#fff;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+        onfocus="this.style.borderColor='#0066ff'" onblur="this.style.borderColor='#333'"
+        oninput="localStorage.setItem('suplefit_customer_name',this.value.trim())">
+    </div>
     <div class="cart-total">
       <span>Total</span>
       <span id="cart-total-amount">$0</span>
@@ -2293,7 +2300,7 @@
       Utilities.formatDate(now,tz,'dd/MM/yyyy'),
       Utilities.formatDate(now,tz,'HH:mm'),
       e.parameter.items||'', e.parameter.total||'',
-      'Pendiente','','','']);
+      'Pendiente', e.parameter.cliente||'','','']);
     return ContentService
       .createTextOutput(JSON.stringify({ok:true,orderId:'#'+num}))
       .setMimeType(ContentService.MimeType.JSON);
@@ -2623,7 +2630,8 @@
     var num = p.getLastRow();
     p.appendRow(['#'+num, Utilities.formatDate(now,tz,'dd/MM/yyyy'),
       Utilities.formatDate(now,tz,'HH:mm'),
-      e.parameter.items||'', e.parameter.total||'', 'Pendiente','','','']);
+      e.parameter.items||'', e.parameter.total||'',
+      'Pendiente', e.parameter.cliente||'','','']);
     return ContentService.createTextOutput(JSON.stringify({ok:true,orderId:'#'+num}))
       .setMimeType(ContentService.MimeType.JSON);
   }
@@ -3046,6 +3054,11 @@
   function openCart() {
     document.getElementById('cart-overlay').classList.add('active');
     document.getElementById('cart-drawer').classList.add('active');
+    // Cargar nombre guardado
+    const inp = document.getElementById('cart-customer-name');
+    if (inp && !inp.value) {
+      inp.value = localStorage.getItem('suplefit_customer_name') || '';
+    }
   }
   function closeCart() {
     document.getElementById('cart-overlay').classList.remove('active');
@@ -3053,16 +3066,25 @@
   }
   function checkout() {
     if (cart.length === 0) return;
+    const customerName = (document.getElementById('cart-customer-name')?.value || '').trim();
+    if (!customerName) {
+      const inp = document.getElementById('cart-customer-name');
+      if (inp) { inp.style.borderColor = '#ff4757'; inp.focus(); }
+      toast('Poné tu nombre para continuar', 'error');
+      return;
+    }
+    localStorage.setItem('suplefit_customer_name', customerName);
     const lines = cart.map(i => `• ${i.name}${i.flavor ? ' (' + i.flavor + ')' : ''} x${i.qty} — ${formatPrice(i.price * i.qty)}`);
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const msg = `Hola Leo! Quiero hacer este pedido:\n\n${lines.join('\n')}\n\n*Total: ${formatPrice(total)}*`;
+    const greeting = `Hola Leo! Soy *${customerName}*. Quiero hacer este pedido:`;
+    const msg = `${greeting}\n\n${lines.join('\n')}\n\n*Total: ${formatPrice(total)}*`;
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
     toast('Abriendo WhatsApp...', 'success');
-    logOrderToSheet([...cart], total); // async, no bloquea
+    logOrderToSheet([...cart], total, customerName); // async, no bloquea
   }
 
-  async function logOrderToSheet(cartItems, total) {
+  async function logOrderToSheet(cartItems, total, customerName) {
     const url = SITE_CONFIG.sheets_url;
     if (!url) return;
     try {
@@ -3072,7 +3094,8 @@
       const params = new URLSearchParams({
         action: 'newOrder',
         items: items,
-        total: formatPrice(total)
+        total: formatPrice(total),
+        cliente: customerName || ''
       });
       const res = await fetch(url + '?' + params.toString());
       if (res.ok) {
