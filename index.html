@@ -2640,7 +2640,13 @@
       const data = await res.json();
       let changed = false;
       data.forEach(row => {
-        const p = PRODUCTS.find(x => x.id === parseInt(row.id));
+        // 1º — coincidencia por ID
+        let p = PRODUCTS.find(x => x.id === parseInt(row.id));
+        // 2º — fallback por nombre normalizado (sin acentos, minúsculas, sin espacios extra)
+        if (!p && row.name) {
+          const normRow = normalizeText(row.name).replace(/\s+/g, ' ').trim();
+          p = PRODUCTS.find(x => normalizeText(x.name).replace(/\s+/g, ' ').trim() === normRow);
+        }
         if (p && row.sale_price !== '' && row.sale_price !== undefined && row.sale_price !== null) {
           const price = parseFloat(row.sale_price);
           if (!isNaN(price) && price > 0) { p.price = price; changed = true; }
