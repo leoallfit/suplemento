@@ -2274,8 +2274,34 @@
           <div style="color:#888;font-size:12px;margin-bottom:8px;">En Google Sheets → <strong style="color:#ccc;">Extensiones → Apps Script</strong>. Borrá todo el código y pegá este:</div>
           <div style="position:relative;background:#0a0a0a;border:1px solid #222;border-radius:3px;padding:12px 14px;">
             <pre style="margin:0;font-family:monospace;font-size:11px;color:#aaa;white-space:pre-wrap;line-height:1.5;">function doGet(e) {
-  var s = SpreadsheetApp.getActiveSheet();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // ── CRM: registrar pedido ─────────────────────────────
+  if (e &amp;&amp; e.parameter &amp;&amp; e.parameter.action === 'newOrder') {
+    var p = ss.getSheetByName('Pedidos');
+    if (!p) {
+      p = ss.insertSheet('Pedidos');
+      p.appendRow(['# Pedido','Fecha','Hora','Productos','Total',
+                   'Estado','Cliente','Tel&#233;fono','Notas']);
+      p.getRange(1,1,1,9).setFontWeight('bold')
+        .setBackground('#1c4587').setFontColor('#ffffff');
+      p.setFrozenRows(1); p.setColumnWidth(4,350);
+    }
+    var now = new Date(), tz = Session.getScriptTimeZone();
+    var num = p.getLastRow();
+    p.appendRow(['#'+num,
+      Utilities.formatDate(now,tz,'dd/MM/yyyy'),
+      Utilities.formatDate(now,tz,'HH:mm'),
+      e.parameter.items||'', e.parameter.total||'',
+      'Pendiente','','','']);
+    return ContentService
+      .createTextOutput(JSON.stringify({ok:true,orderId:'#'+num}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // ── Productos: agregar/actualizar ─────────────────────
   if (e &amp;&amp; e.parameter &amp;&amp; e.parameter.action === 'addProduct') {
+    var s = ss.getSheets()[0];
     var id = e.parameter.id, name = e.parameter.name;
     var price = parseFloat(e.parameter.sale_price) || 0;
     var d = s.getDataRange().getValues(), rowIdx = -1;
@@ -2298,11 +2324,14 @@
     return ContentService.createTextOutput(JSON.stringify({ok:true}))
       .setMimeType(ContentService.MimeType.JSON);
   }
+
+  // ── Lista de precios ──────────────────────────────────
+  var s = ss.getSheets()[0];
   var d = s.getDataRange().getValues(), rows = [];
   for (var i = 1; i &lt; d.length; i++) {
     if (!d[i][0]) continue;
-    rows.push({ id: d[i][0], name: d[i][1],
-      sale_price: d[i][2], list_price: d[i][3] });
+    rows.push({id:d[i][0], name:d[i][1],
+               sale_price:d[i][2], list_price:d[i][3]});
   }
   return ContentService
     .createTextOutput(JSON.stringify(rows))
@@ -2311,7 +2340,7 @@
             <button class="editor-btn" style="position:absolute;top:8px;right:8px;padding:3px 10px;font-size:10px;" onclick="copyAppsScriptCode()">Copiar</button>
           </div>
           <div style="color:#888;font-size:12px;margin-top:10px;">Despu&#233;s: <strong style="color:#fff;">Implementar → Administrar implementaciones → ✏️ Editar → Nueva versi&#243;n → Implementar</strong>. La URL no cambia. Si es la primera vez: <em>Nueva implementaci&#243;n → Aplicaci&#243;n web → Acceso: Cualquiera → Implementar</em>.</div>
-          <div style="color:#27ae60;font-size:11px;margin-top:8px;background:rgba(39,174,96,0.08);padding:6px 10px;border-radius:4px;">&#10003; Al agregar un producto nuevo desde el admin, se a&#241;ade autom&#225;ticamente a la planilla. La columna <strong>Precio Lista</strong> nunca es modificada por la app.</div>
+          <div style="color:#27ae60;font-size:11px;margin-top:8px;background:rgba(39,174,96,0.08);padding:6px 10px;border-radius:4px;">&#10003; Al agregar un producto nuevo se a&#241;ade a la planilla (sin tocar Precio Lista).<br>&#10003; Cada pedido de WhatsApp se registra autom&#225;ticamente en la pesta&#241;a <strong>Pedidos</strong> con fecha, hora, productos y total. Complet&#225;s Cliente y Tel&#233;fono vos mismo.</div>
         </div>
       </div>
 
@@ -2579,8 +2608,29 @@
   }
   function copyAppsScriptCode() {
     const code = `function doGet(e) {
-  var s = SpreadsheetApp.getActiveSheet();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // CRM: registrar pedido
+  if (e && e.parameter && e.parameter.action === 'newOrder') {
+    var p = ss.getSheetByName('Pedidos');
+    if (!p) {
+      p = ss.insertSheet('Pedidos');
+      p.appendRow(['# Pedido','Fecha','Hora','Productos','Total','Estado','Cliente','Teléfono','Notas']);
+      p.getRange(1,1,1,9).setFontWeight('bold').setBackground('#1c4587').setFontColor('#ffffff');
+      p.setFrozenRows(1); p.setColumnWidth(4,350);
+    }
+    var now = new Date(), tz = Session.getScriptTimeZone();
+    var num = p.getLastRow();
+    p.appendRow(['#'+num, Utilities.formatDate(now,tz,'dd/MM/yyyy'),
+      Utilities.formatDate(now,tz,'HH:mm'),
+      e.parameter.items||'', e.parameter.total||'', 'Pendiente','','','']);
+    return ContentService.createTextOutput(JSON.stringify({ok:true,orderId:'#'+num}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Productos: agregar/actualizar
   if (e && e.parameter && e.parameter.action === 'addProduct') {
+    var s = ss.getSheets()[0];
     var id = e.parameter.id, name = e.parameter.name;
     var price = parseFloat(e.parameter.sale_price) || 0;
     var d = s.getDataRange().getValues(), rowIdx = -1;
@@ -2588,14 +2638,12 @@
       if (String(d[i][0]) === String(id)) { rowIdx = i+1; break; }
     }
     if (rowIdx > 0) {
-      s.getRange(rowIdx,2).setValue(name);
-      s.getRange(rowIdx,3).setValue(price);
+      s.getRange(rowIdx,2).setValue(name); s.getRange(rowIdx,3).setValue(price);
       s.getRange(rowIdx,5).setFormula('=C'+rowIdx+'-D'+rowIdx);
       s.getRange(rowIdx,6).setFormula('=IF(D'+rowIdx+'>0,((C'+rowIdx+'-D'+rowIdx+')/D'+rowIdx+')*100,"")');
     } else {
       var row = d.length+1;
-      s.getRange(row,1).setValue(id);
-      s.getRange(row,2).setValue(name);
+      s.getRange(row,1).setValue(id); s.getRange(row,2).setValue(name);
       s.getRange(row,3).setValue(price);
       s.getRange(row,5).setFormula('=C'+row+'-D'+row);
       s.getRange(row,6).setFormula('=IF(D'+row+'>0,((C'+row+'-D'+row+')/D'+row+')*100,"")');
@@ -2603,13 +2651,15 @@
     return ContentService.createTextOutput(JSON.stringify({ok:true}))
       .setMimeType(ContentService.MimeType.JSON);
   }
+
+  // Lista de precios
+  var s = ss.getSheets()[0];
   var d = s.getDataRange().getValues(), rows = [];
   for (var i = 1; i < d.length; i++) {
     if (!d[i][0]) continue;
-    rows.push({ id: d[i][0], name: d[i][1], sale_price: d[i][2], list_price: d[i][3] });
+    rows.push({id:d[i][0], name:d[i][1], sale_price:d[i][2], list_price:d[i][3]});
   }
-  return ContentService
-    .createTextOutput(JSON.stringify(rows))
+  return ContentService.createTextOutput(JSON.stringify(rows))
     .setMimeType(ContentService.MimeType.JSON);
 }`;
     if (navigator.clipboard) navigator.clipboard.writeText(code).then(() => toast('C&#243;digo copiado', 'success'));
@@ -3009,6 +3059,27 @@
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
     toast('Abriendo WhatsApp...', 'success');
+    logOrderToSheet([...cart], total); // async, no bloquea
+  }
+
+  async function logOrderToSheet(cartItems, total) {
+    const url = SITE_CONFIG.sheets_url;
+    if (!url) return;
+    try {
+      const items = cartItems.map(i =>
+        `${i.qty}x ${i.name}${i.flavor ? ' ('+i.flavor+')' : ''}${i.size ? ' ['+i.size+']' : ''}`
+      ).join(' | ');
+      const params = new URLSearchParams({
+        action: 'newOrder',
+        items: items,
+        total: formatPrice(total)
+      });
+      const res = await fetch(url + '?' + params.toString());
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.ok) toast('Pedido ' + (data.orderId||'') + ' guardado en Sheets ✓', 'success');
+      }
+    } catch(e) { console.warn('CRM:', e.message); }
   }
 
   // ---------- Search ----------
