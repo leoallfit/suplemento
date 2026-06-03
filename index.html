@@ -1946,11 +1946,22 @@
   </div>
 </section>
 
-<section id="productos" style="background:#f0f5ff;">
+<section id="productos" style="background:#eef3ff;">
   <div class="container">
     <div class="section-title">
-      <h2>Más <span>Vendidos</span></h2>
-      <p>Los favoritos de nuestra comunidad</p>
+      <h2>Combos <span>Destacados</span></h2>
+      <p>Proteína + Creatina al mejor precio</p>
+    </div>
+    <div class="products" id="products-combos-grid"></div>
+    <div id="no-combos-msg" style="display:none;text-align:center;padding:40px;color:#8a9abd;font-size:14px;">No hay combos disponibles por el momento.</div>
+  </div>
+</section>
+
+<section id="productos-general" style="background:#f0f5ff;">
+  <div class="container">
+    <div class="section-title">
+      <h2>Productos <span>General</span></h2>
+      <p>Todos nuestros suplementos</p>
     </div>
     <div class="products" id="products-grid"></div>
     <!--__REMOVED_PRODUCTS__
@@ -3073,8 +3084,7 @@
   })();
 
   function renderProducts() {
-    const grid = document.getElementById('products-grid');
-    grid.innerHTML = PRODUCTS.filter(p => !p.archived).map(p => `
+    const makeCard = p => `
       <div class="product" data-id="${p.id}" data-category="${p.category}" data-name="${p.name}" onclick="openProduct(${p.id})">
         <div class="product-image" style="${p.image ? 'padding:0;overflow:hidden;' : ''}">
           ${imgFor(p)}
@@ -3092,8 +3102,18 @@
             <button class="add-cart" onclick="event.stopPropagation();quickAdd(${p.id})">+ Añadir</button>
           </div>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    const active  = PRODUCTS.filter(p => !p.archived);
+    const combos  = active.filter(p => p.category === 'combos');
+    const general = active.filter(p => p.category !== 'combos');
+    const combosGrid  = document.getElementById('products-combos-grid');
+    const generalGrid = document.getElementById('products-grid');
+    const noMsg       = document.getElementById('no-combos-msg');
+    if (combosGrid)  combosGrid.innerHTML  = combos.map(makeCard).join('');
+    if (noMsg)       noMsg.style.display   = combos.length ? 'none' : '';
+    if (generalGrid) generalGrid.innerHTML = general.map(makeCard).join('');
+    const secGeneral = document.getElementById('productos-general');
+    if (secGeneral)  secGeneral.style.display = general.length ? '' : 'none';
     if (typeof applyVisibility === 'function') applyVisibility();
   }
 
