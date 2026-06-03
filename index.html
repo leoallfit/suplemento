@@ -405,6 +405,7 @@
   .category {
     background: #ffffff;
     border: 1px solid #dce8ff;
+    border-top: 3px solid #0066ff;
     padding: 20px;
     text-align: center;
     transition: all 0.25s;
@@ -414,12 +415,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,82,204,0.06);
+    box-shadow: 0 4px 16px rgba(0,82,204,0.1);
   }
   .category:hover {
     border-color: #0066ff;
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,102,255,0.12);
+    border-top-color: #0066ff;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(0,102,255,0.18);
+    background: #f0f5ff;
   }
   .category-icon {
     font-size: 48px;
@@ -429,7 +432,8 @@
     font-size: 16px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-weight: 700;
+    font-weight: 800;
+    color: #0d1b3e;
   }
 
   /* Products */
@@ -1240,7 +1244,7 @@
   .category.has-cover { padding: 0; overflow: hidden; }
   .category.has-cover .cat-cover-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; opacity: 0.6;
+    object-fit: cover; opacity: 0.85;
   }
   .category.has-cover .category-label {
     position: relative; z-index: 1; padding: 20px;
@@ -1931,7 +1935,7 @@
   </div>
 </section>
 
-<section id="categorias">
+<section id="categorias" style="background:#ffffff;">
   <div class="container">
     <div class="section-title">
       <h2>Categorías</h2>
